@@ -1,0 +1,53 @@
+{
+	// Copy this file to codebase-search.settings.jsonc for local use.
+	// You can also point the tool at a custom path with CODEBASE_SEARCH_SETTINGS_FILE.
+
+	// codebase_search index mode: "disabled" | "query" | "background"
+	"indexMode": "disabled",
+
+	// embedder provider
+	// openai | ollama | openai-compatible | gemini | mistral | vercel-ai-gateway | bedrock | openrouter
+	"provider": "openai",
+
+	// provider-specific embedding model
+	"modelId": "text-embedding-3-small",
+
+	// optional explicit dimension override (recommended for custom models)
+	"modelDimension": 1536,
+
+	// qdrant
+	"qdrantUrl": "http://localhost:6333",
+	"qdrantApiKey": "",
+
+	// search tuning
+	"searchMinScore": 0.4,
+	"searchMaxResults": 20,
+
+	// openai
+	"openAiApiKey": "",
+	"openAiBaseUrl": "",
+
+	// ollama
+	"ollamaBaseUrl": "http://localhost:11434",
+
+	// openai-compatible
+	"openAiCompatibleBaseUrl": "",
+	"openAiCompatibleApiKey": "",
+
+	// gemini
+	"geminiApiKey": "",
+
+	// mistral
+	"mistralApiKey": "",
+
+	// vercel ai gateway
+	"vercelAiGatewayApiKey": "",
+
+	// bedrock
+	"bedrockRegion": "",
+	"bedrockProfile": "",
+
+	// openrouter
+	"openRouterApiKey": "",
+	"openRouterSpecificProvider": ""
+}

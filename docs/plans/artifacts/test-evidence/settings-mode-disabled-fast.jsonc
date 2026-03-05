@@ -1,0 +1,8 @@
+{
+	"indexMode": "disabled",
+	"provider": "openai",
+	"modelId": "text-embedding-3-small",
+	"modelDimension": 1536,
+	"qdrantUrl": "http://127.0.0.1:1",
+	"openAiApiKey": "dummy"
+}

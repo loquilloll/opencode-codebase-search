@@ -1,0 +1,24 @@
+# Keep these directories tracked in this standalone repo,
+# overriding entries from the global excludes file.
+!docs/
+!docs/**
+!AGENTS.md
+
+# Personal local settings (do not commit)
+codebase-search.settings.jsonc
+
+# Generated runtime and release artifacts
+.opencode/
+dist/
+
+# Dependency and cache artifacts
+node_modules/
+src/node_modules/
+**/node_modules/
+**/*.cache.json
+
+# Local/dev session artifacts
+session.json
+
+# Nested fixture git metadata (dev-only)
+docs/plans/artifacts/test-fixtures/**/.git/

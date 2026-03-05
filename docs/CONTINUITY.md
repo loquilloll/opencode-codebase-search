@@ -1,0 +1,218 @@
+# CONTINUITY
+
+[PLANS]
+
+- 2026-02-15T12:44:46Z [USER] Create a multi-phase build plan for extracting Roo semantic codebase search into an OpenCode custom tool and place it in `./plans/`.
+- 2026-02-15T12:44:46Z [CODE] Execute phased plan via subagents: explore (compatibility freeze), general (scaffold/core/providers/indexer/integration/docs), test-writer (verification).
+- 2026-02-15T12:55:44Z [USER] Update plan to support three indexing modes and plugin-driven background indexing while Roo-Code remains running.
+- 2026-02-15T12:55:44Z [CODE] Revised plan phases to include plugin worker phase and mode-aware tool integration phase.
+- 2026-02-15T13:02:57Z [USER] Update the plan with an explicit testing methodology, including live OpenCode execution that triggers `codebase_search`.
+- 2026-02-15T13:02:57Z [CODE] Expanded plan with build-time and live invocation testing strategy, mode-matrix live checks, and evidence capture artifacts.
+- 2026-02-15T13:05:18Z [USER] Update the plan to incorporate `tmux-cli` for driving terminal-based testing.
+- 2026-02-15T13:05:18Z [CODE] Added tmux-cli orchestration requirements and outputs to testing sections of the plan.
+- 2026-02-15T13:08:16Z [USER] Confirmed `tmux-cli` is installed.
+- 2026-02-15T13:08:16Z [CODE] Updated plan to use tmux-cli as default live-test driver in this workspace and added concrete tmux command flow.
+- 2026-02-15T13:12:37Z [USER] Approved creating `plans/artifacts/test-evidence/tmux-cli-runbook.md` and starting Phase 0 implementation work.
+- 2026-02-15T13:12:37Z [CODE] Created tmux runbook and produced initial Phase 0 compatibility artifacts.
+- 2026-02-15T13:30:25Z [USER] Requested continuing implementation and using `opencode serve --port 0` for smoke checks.
+- 2026-02-15T13:30:25Z [CODE] Completed Phase 1 scaffolding and partial Phase 2 core extraction under `.opencode/`.
+- 2026-02-15T13:38:44Z [USER] Requested a small example codebase fixture for testing `codebase_search`.
+- 2026-02-15T13:51:09Z [USER] Requested support for command substitution in JSONC settings values (example: `"geminiApiKey": "$(pass show gemini)"`) and to continue build/test flow.
+- 2026-02-15T14:04:23Z [USER] Requested manual test gating: assistant must provide test project path, wait for user to open Roo-Code there, then continue.
+- 2026-02-15T14:09:43Z [USER] Confirmed Roo-Code is open in the requested fixture path and instructed assistant to continue.
+- 2026-02-15T14:19:38Z [USER] Requested continued execution after readiness confirmation.
+- 2026-02-15T14:35:10Z [USER] Requested plan updates for parity gaps: tree-sitter chunking parity, dimension-mismatch recreate parity, `.ignore` support, and output/ranking parity; requested implementation start for tree-sitter parity.
+- 2026-02-15T14:46:04Z [USER] Requested implementing dimension-mismatch recreate parity and asked how to test mismatched dimensions.
+- 2026-02-15T14:54:30Z [USER] Requested assistant to continue autonomously with next steps unless blocked.
+- 2026-02-15T15:14:42Z [USER] Requested three ordered follow-ups: (1) automated tests for reranking + `.ignore` slash semantics, (2) full tmux mode-matrix rerun with evidence-doc append, (3) clean commit proposal with exact file list.
+- 2026-02-15T15:27:42Z [USER] Requested moving all current work out of Roo-Code into its own repository, explicitly including the `plans/` folder.
+- 2026-02-15T15:52:13Z [USER] Marked `src/codebase-search.settings.jsonc` as personal settings, requested moving it to project root, creating an example settings file, and not committing personal settings.
+- 2026-02-15T17:13:55Z [USER] Requested repository reorganization for development/distribution, GitHub remote alignment, semantic-versioned release documentation, and removal of `.opencode` symlink.
+- 2026-02-15T17:23:55Z [USER] Requested removing development-oriented content from `README.md`, moving that content to `AGENTS.md`, keeping `docs/plans/`, trimming runtime README content, and keeping first release target `v0.1.0`.
+- 2026-02-15T17:29:32Z [USER] Requested codebase analysis and a ~150-line `AGENTS.md` covering build/lint/test commands (including single-test usage), code style guidelines, and any Cursor/Copilot rules.
+- 2026-02-15T19:05:57Z [USER] Confirmed tool usage guidance will come from OpenCode config/system prompt and requested executing the persisted reorganization plan (`implement`).
+- 2026-02-15T19:13:14Z [USER] Requested continuation with two actions: (1) prepare clean initial commit proposal with exact staged file list, (2) perform docs consistency sweep for stale `plans/` references in non-historical docs.
+- 2026-02-15T18:55:01Z [USER] Requested writing the reorganization + OpenCode config prompting plan into a repository file.
+- 2026-02-15T18:55:01Z [CODE] Prepared and saved a concrete phased plan at `docs/plans/repo-reorg-and-opencode-config-plan.md`.
+
+[DECISIONS]
+
+- 2026-02-15T12:44:46Z [USER] Keep only parts needed for `codebase_search` runtime; remove extension-only dependencies.
+- 2026-02-15T12:44:46Z [USER] Tool must reuse existing Roo index collections and avoid duplicate index creation.
+- 2026-02-15T12:44:46Z [USER] `codebase_search` must auto-run incremental indexing before query execution.
+- 2026-02-15T12:44:46Z [USER] First implementation scope includes all Roo embedder providers.
+- 2026-02-15T12:55:44Z [USER] SUPERSEDES 2026-02-15T12:44:46Z per-query-only indexing decision. Indexing mode is now tri-state: `background`, `query`, `disabled`.
+- 2026-02-15T12:55:44Z [USER] Default indexing mode is `disabled`.
+- 2026-02-15T12:55:44Z [USER] In `background` mode, query must return immediately and trigger urgent background indexing when stale/missing.
+- 2026-02-15T13:02:57Z [USER] Validation must include launching OpenCode and triggering `codebase_search` during development.
+- 2026-02-15T13:05:18Z [USER] Testing plan should include tmux-cli-driven execution for terminal automation.
+- 2026-02-15T13:08:16Z [USER] tmux-cli should be actively used to facilitate testing.
+- 2026-02-15T13:30:25Z [USER] Serve smoke tests should bind to random port (`--port 0`).
+- 2026-02-15T13:38:44Z [USER] Test flow should use a dedicated small fixture codebase.
+- 2026-02-15T13:51:09Z [USER] Settings file should allow command substitution for secrets.
+- 2026-02-15T14:04:23Z [USER] For indexing-disabled tests, user must start Roo-Code in target test folder before assistant runs validation.
+- 2026-02-15T14:35:10Z [USER] Parity roadmap explicitly includes OpenCode `.ignore` support and ranking behavior tuning.
+- 2026-02-15T14:46:04Z [USER] Needs a practical mismatch test method for local validation.
+- 2026-02-15T15:27:42Z [USER] New standalone repository path chosen by assistant default: `/home/<user>/Documents/pgit/opencode-codebase-search`.
+- 2026-02-15T15:52:13Z [USER] Personal settings file path should be root-level and excluded from commits.
+- 2026-02-15T17:13:55Z [USER] Canonical source is `src/`; `.opencode/` must be generated from source and release assets must exclude `plans/`/fixture artifacts.
+- 2026-02-15T17:23:55Z [USER] Planning artifacts should live under `docs/plans/` and remain excluded from release assets.
+- 2026-02-15T17:29:32Z [USER] `AGENTS.md` should serve as the agent-facing operating guide for this repository.
+- 2026-02-15T19:05:57Z [USER] Prompting contract should be concise and config-driven rather than embedded in extensive repository docs.
+
+[PROGRESS]
+
+- 2026-02-15T12:44:46Z [CODE] Added plan document at `plans/opencode-codebase-search-multi-phase-build.md` with phased scope, subagent assignments, parallelization strategy, and definition of done.
+- 2026-02-15T12:55:44Z [CODE] Rewrote `plans/opencode-codebase-search-multi-phase-build.md` with mode contract, plugin worker phase, and updated dispatch/DoD.
+- 2026-02-15T13:02:57Z [CODE] Updated `plans/opencode-codebase-search-multi-phase-build.md` with a dedicated testing methodology section and live mode-matrix verification requirements.
+- 2026-02-15T13:05:18Z [CODE] Updated `plans/opencode-codebase-search-multi-phase-build.md` with tmux-cli orchestration guidance, Phase 7 tmux validation task, tmux runbook output, and exit criteria.
+- 2026-02-15T13:08:16Z [CODE] Refined tmux section with default-run status for this workspace, explicit tmux command sequence, and default-path wording in Phase 7.
+- 2026-02-15T13:12:37Z [CODE] Added `plans/artifacts/test-evidence/tmux-cli-runbook.md` with mode matrix execution and evidence capture steps.
+- 2026-02-15T13:12:37Z [CODE] Added `plans/artifacts/codebase-search-compat-checklist.md` to freeze Roo compatibility invariants.
+- 2026-02-15T13:12:37Z [CODE] Added `plans/artifacts/codebase-search-remove-replace-map.md` to map extension-only removals and replacements for `.opencode` extraction.
+- 2026-02-15T13:30:25Z [CODE] Added `.opencode/package.json`, `codebase_search` tool entry, plugin worker, and extracted modules for config, qdrant, embedders, parser, indexer, cache, ignore, and engine.
+- 2026-02-15T13:38:44Z [CODE] Added JSONC settings support for tool configuration via `.opencode/codebase-search.settings.jsonc` and updated docs.
+- 2026-02-15T13:38:44Z [CODE] Added fixture workspace `plans/artifacts/test-fixtures/mini-shop` with auth, session, invoice, retry queue, cache, and Python script files for semantic search testing.
+- 2026-02-15T13:38:44Z [CODE] Updated tmux runbook to reference the fixture workspace for repeatable live tests.
+- 2026-02-15T13:51:09Z [CODE] Implemented command substitution evaluation for string fields in `.opencode` JSONC settings via `$(...)` with `/bin/sh`, 15s timeout, and actionable error messaging.
+- 2026-02-15T13:51:09Z [CODE] Updated `.opencode/codebase-search.settings.jsonc` and `.opencode/tools/codebase-search/README.md` to document command substitution usage.
+- 2026-02-15T13:51:09Z [CODE] Fixed plugin mode gating bug in `.opencode/plugins/codebase-index-worker.ts` to respect configured index mode instead of forcing background scheduling.
+- 2026-02-15T13:51:09Z [CODE] Added smoke-test evidence notes at `plans/artifacts/test-evidence/live-smoke-command-substitution.md`.
+- 2026-02-15T14:04:23Z [CODE] Added `.opencode` symlink inside fixture workspace to allow local tool discovery from `plans/artifacts/test-fixtures/mini-shop`.
+- 2026-02-15T14:04:23Z [CODE] Ran live checks with user settings and found `codebase_search` uses existing workspace collection in disabled mode unless test run is anchored to the fixture workspace.
+- 2026-02-15T14:09:43Z [CODE] Executed live mode-matrix checks with user settings in fixture workspace and captured evidence at `plans/artifacts/test-evidence/live-mode-matrix-user-settings.md`.
+- 2026-02-15T14:09:43Z [CODE] Updated tmux runbook with git-root precondition to prevent parent-repo index contamination.
+- 2026-02-15T14:19:38Z [CODE] Executed tmux-cli mode matrix using attached server and persisted JSON event logs (`tmux-disabled.jsonl`, `tmux-query.jsonl`, `tmux-background.jsonl`).
+- 2026-02-15T14:19:38Z [CODE] Updated tmux runbook to use random server port (`--port 0`) with captured `SERVER_URL` to avoid fixed-port collisions.
+- 2026-02-15T14:19:38Z [CODE] Fixed adoption behavior in `ensureIndexFresh()` to reconcile existing Roo indexes when cache is missing (instead of early no-op snapshot adoption).
+- 2026-02-15T14:19:38Z [CODE] Added evidence note `plans/artifacts/test-evidence/live-adoption-reconciliation.md` and updated mode evidence docs to reflect reconciled query results.
+- 2026-02-15T14:35:10Z [CODE] Updated plan `plans/opencode-codebase-search-multi-phase-build.md` with explicit parity-gap closure items and active implementation slice for tree-sitter chunking.
+- 2026-02-15T14:35:10Z [CODE] Implemented tree-sitter parser/chunking in `.opencode/tools/codebase-search/parser.ts` with local tree-sitter loader and markdown parser support.
+- 2026-02-15T14:35:10Z [CODE] Added `.opencode/tools/codebase-search/tree-sitter/language-parser.ts` and copied query definitions into `.opencode/tools/codebase-search/tree-sitter/queries/*.ts`.
+- 2026-02-15T14:35:10Z [CODE] Updated `.opencode/tools/codebase-search/indexer.ts` to await async tree-sitter parsing and updated extension fallback declarations.
+- 2026-02-15T14:46:04Z [CODE] Implemented Roo-parity dimension mismatch handling in `.opencode/tools/codebase-search/qdrant.ts` with delete-and-recreate flow plus contextual errors.
+- 2026-02-15T14:46:04Z [CODE] Fixed reindex gap after recreate in `.opencode/tools/codebase-search/indexer.ts` by forcing full reindex when collection is recreated and cache exists.
+- 2026-02-15T14:46:04Z [CODE] Added mismatch validation evidence at `plans/artifacts/test-evidence/live-dimension-mismatch-parity.md`.
+- 2026-02-15T14:54:30Z [CODE] Updated `.opencode/tools/codebase-search/ignore.ts` to evaluate ignore matches for both `path` and `path/` forms with normalized separators, improving directory-rule parity.
+- 2026-02-15T14:54:30Z [CODE] Added lightweight query-intent reranking in `.opencode/tools/codebase-search/engine.ts` to prefer code files for code-centric queries and docs files for docs-focused queries.
+- 2026-02-15T14:54:30Z [CODE] Documented ignore slash behavior and ranking heuristics in `.opencode/tools/codebase-search/README.md`.
+- 2026-02-15T14:54:30Z [CODE] Added live validation note `plans/artifacts/test-evidence/live-ignore-and-ranking-parity.md`.
+- 2026-02-15T15:14:42Z [CODE] Added an active ordered execution queue to `plans/opencode-codebase-search-multi-phase-build.md` for the three requested follow-ups and marked completion statuses.
+- 2026-02-15T15:14:42Z [CODE] Added focused automated tests at `.opencode/tools/codebase-search/__tests__/ranking.test.ts` and `.opencode/tools/codebase-search/__tests__/ignore.test.ts`.
+- 2026-02-15T15:14:42Z [CODE] Extracted ranking helpers into `.opencode/tools/codebase-search/ranking.ts` and wired `.opencode/tools/codebase-search/engine.ts` to use `rerankSearchResults()` for testable ranking behavior.
+- 2026-02-15T15:14:42Z [CODE] Re-ran tmux mode matrix and appended additive rerun evidence to `plans/artifacts/test-evidence/live-mode-matrix-tmux-user-settings.md` and `plans/artifacts/test-evidence/live-mode-matrix-user-settings.md`.
+- 2026-02-15T15:27:42Z [CODE] Created standalone git repository at `/home/<user>/Documents/pgit/opencode-codebase-search` and copied `.opencode/` (excluding `node_modules`), `plans/`, and `docs/CONTINUITY.md` into it.
+- 2026-02-15T15:27:42Z [CODE] Updated migrated repo wiring: adjusted `.opencode/.gitignore`, added root `.gitignore` overrides for globally ignored `plans/` and `docs/`, and repointed fixture `.opencode` symlink to relative `../../../../.opencode`.
+- 2026-02-15T15:27:42Z [CODE] Removed moved directories from Roo-Code workspace: `.opencode/` and `plans/`.
+- 2026-02-15T15:52:13Z [CODE] Moved personal settings from `src/codebase-search.settings.jsonc` to root `codebase-search.settings.jsonc` and deleted the src copy.
+- 2026-02-15T15:52:13Z [CODE] Added root example settings template `codebase-search.settings.example.jsonc` for commit-safe defaults.
+- 2026-02-15T15:52:13Z [CODE] Updated root `.gitignore` to ignore `codebase-search.settings.jsonc` so personal settings stay local.
+- 2026-02-15T17:13:55Z [CODE] Removed broken `.opencode` symlink and implemented generated-runtime workflow via `scripts/sync-opencode.mjs`.
+- 2026-02-15T17:13:55Z [CODE] Reorganized repository identity/docs for distribution: new project README, `CHANGELOG.md`, `docs/RELEASING.md`, and `docs/ARCHITECTURE.md`.
+- 2026-02-15T17:13:55Z [CODE] Replaced fixture-oriented root/package structure with tool-oriented `package.json` scripts (`sync:opencode`, `verify:release`, `build:release`, `release:prep`).
+- 2026-02-15T17:13:55Z [CODE] Cleaned `src/` to canonical runtime source only (`src/tools/**`, `src/plugins/**`) and removed fixture/demo code and stale dependency artifacts from `src/`.
+- 2026-02-15T17:13:55Z [CODE] Added release packaging scripts and verified release asset generation to `dist/opencode-codebase-search-v0.1.0.tar.gz` without creating/publishing a GitHub release.
+- 2026-02-15T17:13:55Z [CODE] Configured git remote `origin` to `git@github-loquilloll:loquilloll/opencode-codebase-search.git`.
+- 2026-02-15T17:16:58Z [CODE] Hardened runtime packaging filters to exclude `__tests__` directories from generated `.opencode` payload and rebuilt release archive.
+- 2026-02-15T17:23:55Z [CODE] Moved planning tree from `plans/` to `docs/plans/` and updated `.gitignore` fixture `.git` exclusion path accordingly.
+- 2026-02-15T17:23:55Z [CODE] Repointed fixture runtime symlink to `../../../../../.opencode` after `docs/plans/` relocation.
+- 2026-02-15T17:23:55Z [CODE] Trimmed user-facing `README.md` to install/config/runtime behavior only and moved development guidance (layout, quickstart, expected remote) into `AGENTS.md`.
+- 2026-02-15T17:23:55Z [CODE] Updated runtime generator to overwrite `.opencode/tools/codebase-search/README.md` with a minimal distribution README.
+- 2026-02-15T17:24:55Z [CODE] Regenerated `.opencode/` and rebuilt release asset to apply trimmed runtime README in distributable output.
+- 2026-02-15T17:29:32Z [CODE] Rewrote `AGENTS.md` into a detailed (~150-line) agent guide including repository map, install/build/test/verify commands, single-test commands, lint/typecheck status, style conventions, release rules, commit hygiene, and remote expectations.
+- 2026-02-15T19:05:57Z [CODE] Implemented `docs/plans/repo-reorg-and-opencode-config-plan.md`: replaced fixture root identity with project identity (`README.md`, `package.json`) and restored release/test scripts.
+- 2026-02-15T19:05:57Z [CODE] Cleaned module boundaries by removing fixture/demo code from canonical source tree (`src/auth`, `src/cache`, `src/orders`, `src/main.ts`, `src/types.ts`, `src/.gitignore`) and removing root `scripts/load_demo_data.py`.
+- 2026-02-15T19:05:57Z [CODE] Updated README to runtime/user-facing guidance plus concise OpenCode config prompt policy while keeping development workflow details in `AGENTS.md`.
+- 2026-02-15T19:05:57Z [CODE] Regenerated runtime and rebuilt release artifact with new project metadata.
+- 2026-02-15T18:55:01Z [CODE] Added `docs/plans/repo-reorg-and-opencode-config-plan.md` with goals, phased actions, prompt block, validation checklist, and definition of done.
+- 2026-02-15T19:13:14Z [CODE] Completed non-historical docs sweep pass and fixed remaining stale fixture path in `docs/plans/artifacts/test-evidence/tmux-cli-runbook.md` (`plans/...` -> `docs/plans/...`).
+- 2026-02-15T19:13:14Z [CODE] Prepared explicit initial-commit staging inventory from `git ls-files -o --exclude-standard` for user review.
+- 2026-02-15T19:19:16Z [CODE] Added root `.gitignore` override `!AGENTS.md` so global excludes do not hide the repository's required agent contract file.
+- 2026-02-15T19:19:16Z [CODE] Removed embedded fixture git metadata at `docs/plans/artifacts/test-fixtures/mini-shop/.git` to make fixture files directly trackable in the main repository.
+- 2026-02-15T19:19:16Z [CODE] Updated runbook guidance to initialize fixture git root locally (`git init`) instead of relying on committed nested `.git` metadata.
+- 2026-02-15T19:19:16Z [CODE] Expanded non-historical path sweep updates in evidence docs for relocated references (`plans/...` -> `docs/plans/...`) where they function as navigational links.
+
+[DISCOVERIES]
+
+- 2026-02-15T12:44:46Z [TOOL] No prior continuity file existed at `docs/CONTINUITY.md` when read was attempted.
+- 2026-02-15T12:44:46Z [TOOL] `plans/` directory did not exist and was created before writing the plan file.
+- 2026-02-15T12:55:44Z [TOOL] OpenCode plugin events expose hooks usable for background indexing triggers (`session.created`, `file.watcher.updated`, `session.idle`).
+- 2026-02-15T13:02:57Z [TOOL] OpenCode CLI supports repeatable non-interactive validation flow with `opencode serve` + `opencode run --format json` for tool-event verification.
+- 2026-02-15T13:05:18Z [TOOL] `tmux-cli --help` returned `command not found`; tmux-driven automation requires installing `claude-code-tools` in the execution environment.
+- 2026-02-15T13:08:16Z [TOOL] SUPERSEDES 2026-02-15T13:05:18Z discovery in this environment: `tmux-cli --help` now succeeds and reports remote-mode session management.
+- 2026-02-15T13:12:37Z [TOOL] `tmux-cli` reports REMOTE mode in this shell; runbook assumes pane IDs from `tmux-cli list_panes`.
+- 2026-02-15T13:30:25Z [TOOL] `timeout 20 opencode serve --port 0 --hostname 127.0.0.1` succeeded and printed a random listening port.
+- 2026-02-15T13:30:25Z [TOOL] `opencode run --port 0 --format json ...` failed with `ProviderModelNotFoundError` for `openai/gpt-5.2-codex-high`; custom tool loading did not emit import-time errors.
+- 2026-02-15T13:38:44Z [CODE] `.opencode/.gitignore` ignores `.opencode/package.json`; config artifacts are local-only unless ignore rules are adjusted.
+- 2026-02-15T13:51:09Z [TOOL] Live run with command substitution file `settings-cmdsub-empty.jsonc` failed with missing Gemini key, confirming `$(...)` evaluation to empty string.
+- 2026-02-15T13:51:09Z [TOOL] Live run with `settings-cmdsub-ok.jsonc` completed `codebase_search` tool call and returned `mode=disabled`, `reason=no-existing-index`, `results=[]`.
+- 2026-02-15T13:51:09Z [TOOL] Observed plugin scheduling in disabled mode before fix; resolved by removing forced background override in plugin config load.
+- 2026-02-15T14:04:23Z [TOOL] Running with `--dir` under fixture without opening Roo-Code there returned `Tool 'codebase_search' is not available in this environment` until fixture `.opencode` visibility was addressed.
+- 2026-02-15T14:04:23Z [TOOL] Query-mode run against fixture timed out with user settings and remote Qdrant, indicating long-running index path requires coordinated startup context.
+- 2026-02-15T14:09:43Z [TOOL] With fixture as standalone git root, disabled mode returned `indexing.reason=search-only-existing-index` and non-empty fixture-scoped results.
+- 2026-02-15T14:09:43Z [TOOL] Query mode returned `indexing.reason=adopted-existing-roo-index`, confirming no duplicate index creation during adoption.
+- 2026-02-15T14:09:43Z [TOOL] Background mode returned `indexing.triggered=true` with `reason=background-refresh-scheduled` and non-blocking results.
+- 2026-02-15T14:09:43Z [TOOL] Without nested `.git` in fixture, `context.worktree` resolved to parent repo and produced unrelated search hits.
+- 2026-02-15T14:19:38Z [TOOL] Fixed-port server startup on `4096` can fail when port is occupied; random port startup succeeded (`http://127.0.0.1:46013`).
+- 2026-02-15T14:19:38Z [TOOL] After adoption reconciliation fix, query mode returned `reason=adopted-existing-roo-index-reconciled`, `processedFiles=10`, `indexedBlocks=11`, and top hit `src/auth/password.ts`.
+- 2026-02-15T14:35:10Z [TOOL] `bun` is not available in this environment; `.opencode` dependencies were installed successfully with `npm install --no-audit --no-fund`.
+- 2026-02-15T14:35:10Z [TOOL] Post tree-sitter implementation run returned `indexedBlocks=39` and preserved expected top hit `src/auth/password.ts` for auth query.
+- 2026-02-15T14:46:04Z [TOOL] Forced mismatch test (`CODEBASE_SEARCH_MODEL_DIMENSION=999`) logged recreate path and produced expected temporary `Bad Request` due vector mismatch.
+- 2026-02-15T14:46:04Z [TOOL] Subsequent normal query run logged reverse recreate (`999 -> 3072`) and now performed full reindex (`processedFiles=10`, `indexedBlocks=39`) instead of stale no-op.
+- 2026-02-15T14:54:30Z [TOOL] Before reranking tweak, code-centric query `where are passwords hashed and verified` returned `README.md` as top hit despite lower code relevance.
+- 2026-02-15T14:54:30Z [TOOL] After reranking tweak, same code-centric query ranked `src/auth/password.ts` first while keeping raw score values unchanged in output.
+- 2026-02-15T14:54:30Z [TOOL] Docs-focused query `readme semantic queries overview` returned `README.md` snippets in top positions, confirming docs-intent branch.
+- 2026-02-15T14:54:30Z [TOOL] Temporary fixture `.ignore` rule `src/auth/` produced `deletedFiles=2` in query mode and removed auth hits; removing `.ignore` restored auth blocks (`processedFiles=2`, `indexedBlocks=4`).
+- 2026-02-15T15:14:42Z [TOOL] `npx --yes tsx --test ".opencode/tools/codebase-search/__tests__/*.test.ts"` passed (`tests=5`, `pass=5`, `fail=0`) for ranking + ignore semantics.
+- 2026-02-15T15:14:42Z [TOOL] In remote mode, `tmux-cli execute` can still return `exit_code=-1` before command completion; full run output was reliably recovered via `tmux capture-pane -pt <session:window>.0 -S -2000`.
+- 2026-02-15T15:14:42Z [TOOL] Attached runs without explicit `-m` can fall back to unavailable model `openai/gpt-5.2-codex-high`; explicit `-m openai/gpt-5.3-codex` produced successful rerun matrix outputs.
+- 2026-02-15T15:14:42Z [TOOL] tmux rerun results: `disabled -> search-only-existing-index`, `query -> already-fresh`, `background -> background-refresh-scheduled`, with code-first hits preserved for code-centric queries.
+- 2026-02-15T15:27:42Z [TOOL] Migrated fixture symlink originally pointed to absolute Roo-Code path (`/home/<user>/Documents/pgit/Roo-Code/.opencode`) and needed rewiring for standalone portability.
+- 2026-02-15T15:27:42Z [TOOL] Global git excludes (`/home/<user>/.gitignore_global`) ignore `plans/` and `docs/`; standalone repo required root `.gitignore` negation rules to keep them trackable.
+- 2026-02-15T15:27:42Z [TOOL] Focused test suite passed in standalone repo: `npx --yes tsx --test ".opencode/tools/codebase-search/__tests__/*.test.ts"` (`pass=5`, `fail=0`).
+- 2026-02-15T15:52:13Z [TOOL] `git status --short --ignored` confirms `codebase-search.settings.jsonc` is ignored (`!!`) while `codebase-search.settings.example.jsonc` is trackable (`??`).
+- 2026-02-15T17:13:55Z [TOOL] Root `.opencode` was a dangling symlink to deleted Roo-Code path; it was removed and replaced by generated directory workflow.
+- 2026-02-15T17:13:55Z [TOOL] End-to-end local validation succeeded after reorganization: `npm run sync:opencode`, `npm run test:focused` (`pass=5`), `npm run verify:release`, `npm run build:release`.
+- 2026-02-15T17:13:55Z [TOOL] `git remote -v` now reports configured origin `git@github-loquilloll:loquilloll/opencode-codebase-search.git` for fetch/push.
+- 2026-02-15T17:16:58Z [TOOL] Initial release archive still contained `.opencode/tools/codebase-search/__tests__/` (directory-only); filter logic was adjusted and subsequent `verify:release` + tar listing confirmed exclusion.
+- 2026-02-15T17:16:58Z [TOOL] Final checks passed: `npm run test:focused` (`pass=5`), release archive contents limited to runtime payload + top-level release docs/templates.
+- 2026-02-15T17:23:55Z [TOOL] After moving `plans/` under `docs/`, fixture `.opencode` symlink depth changed by one level and required explicit relinking.
+- 2026-02-15T17:24:55Z [TOOL] Validation after README split/trim succeeded: `npm run sync:opencode`, `npm run verify:release`, and `npm run build:release` all completed successfully.
+- 2026-02-15T17:29:32Z [TOOL] Rule-source scan confirmed no repository-level Cursor/Copilot rule files currently exist (`.cursor/rules/`, `.cursorrules`, `.github/copilot-instructions.md`).
+- 2026-02-15T17:29:32Z [TOOL] Single-test command validation succeeded with `npx --yes tsx --test "src/tools/codebase-search/__tests__/ignore.test.ts"`.
+- 2026-02-15T19:05:57Z [TOOL] `npm run release:prep` completed successfully after cleanup (`sync:opencode`, focused tests pass=5, verify-release pass, build-release pass).
+- 2026-02-15T19:05:57Z [TOOL] Release archive inspection confirms boundaries: `dist/opencode-codebase-search-v0.1.0.tar.gz` contains runtime payload + `README.md`/`CHANGELOG.md`/settings example only, with no `docs/plans/**` content.
+- 2026-02-15T19:13:14Z [TOOL] Sweep query `plans/` across docs/code found stale references primarily in historical evidence logs; per user scope, only non-historical/runbook guidance paths were corrected.
+- 2026-02-15T19:13:14Z [TOOL] Staging inventory extraction command: `git ls-files -o --exclude-standard`.
+- 2026-02-15T19:19:16Z [TOOL] Before removing fixture `.git`, `git status --untracked-files=all` collapsed fixture as a single directory entry and `git add` on the directory failed with "does not have a commit checked out".
+- 2026-02-15T19:19:16Z [TOOL] After removing fixture `.git`, status now reports exact fixture files (including `.opencode` symlink and source files), enabling precise initial commit staging.
+
+[OUTCOMES]
+
+- 2026-02-15T12:44:46Z [CODE] Planning artifact completed and persisted; ready to begin implementation phases.
+- 2026-02-15T12:55:44Z [CODE] Plan now reflects user-approved tri-mode indexing strategy and non-blocking background query behavior.
+- 2026-02-15T13:02:57Z [CODE] Plan now enforces live OpenCode tool-invocation checks as part of completion criteria.
+- 2026-02-15T13:05:18Z [CODE] Plan now includes tmux-cli-based live testing as a preferred path with documented fallback.
+- 2026-02-15T13:08:16Z [CODE] Plan now treats tmux-cli as default live-test orchestration path for this workspace.
+- 2026-02-15T13:12:37Z [CODE] Phase 0 started with concrete artifacts; implementation can proceed to Phase 1 scaffolding.
+- 2026-02-15T13:30:25Z [CODE] Scaffold is in place for OpenCode custom tool/plugin runtime; next step is hardening compatibility behaviors and running live tool-invocation tests once a valid model is configured.
+- 2026-02-15T13:38:44Z [CODE] Fixture workspace and JSONC settings path are now available, unblocking reproducible end-to-end tool tests.
+- 2026-02-15T13:51:09Z [CODE] JSONC command substitution for secrets is working and validated with live tool invocation; mode gating regression in plugin path is fixed.
+- 2026-02-15T14:04:23Z [CODE] Test execution now gated on user confirmation that Roo-Code is open in the target fixture workspace.
+- 2026-02-15T14:09:43Z [CODE] User-settings mode matrix is validated end-to-end in fixture workspace; remaining work is quality tuning (ranking relevance to source files) and broader verification.
+- 2026-02-15T14:19:38Z [CODE] tmux-orchestrated validation and adoption reconciliation are complete; semantic relevance for fixture auth query now returns expected code-first hit.
+- 2026-02-15T14:35:10Z [CODE] First parity-gap implementation item (tree-sitter chunking) is in progress with live verification; remaining requested gaps are dimension-mismatch recreate parity, `.ignore` support, and ranking tuning.
+- 2026-02-15T14:46:04Z [CODE] Dimension-mismatch recreate parity is implemented and validated; remaining parity gaps are `.ignore` support and ranking/output tuning.
+- 2026-02-15T14:54:30Z [CODE] `.ignore` scanner parity and ranking/output tuning are now implemented with live evidence; remaining work is optional hardening/automation coverage.
+- 2026-02-15T15:14:42Z [CODE] User-requested ordered follow-ups are complete: focused automated tests are in place and passing, tmux mode matrix was rerun with additive evidence docs, and commit proposal prep is ready.
+- 2026-02-15T15:27:42Z [CODE] All active artifacts now live in standalone repository `/home/<user>/Documents/pgit/opencode-codebase-search`; Roo-Code workspace has been cleaned of `.opencode/` and `plans/` per user request.
+- 2026-02-15T15:52:13Z [CODE] Settings handling now separates personal config (ignored root file) from shareable defaults (example file), matching user request.
+- 2026-02-15T17:13:55Z [CODE] Repository now has clear source/runtime separation (`src/` canonical, generated `.opencode/`), release documentation, semver-ready changelog, and release asset pipeline that excludes dev-only plans/fixtures.
+- 2026-02-15T17:16:58Z [CODE] Reorganization pass is complete with clean release-asset boundaries and validated no-release packaging flow.
+- 2026-02-15T17:23:55Z [CODE] Documentation split is now explicit: `README.md` is end-user/runtime focused, while contributor/development guidance lives in `AGENTS.md`.
+- 2026-02-15T17:24:55Z [CODE] Distribution now carries trimmed runtime docs while keeping full contributor workflow in `AGENTS.md`.
+- 2026-02-15T17:29:32Z [CODE] `AGENTS.md` now acts as a comprehensive, agent-consumable operations guide aligned with current scripts, style, and release process.
+- 2026-02-15T19:05:57Z [CODE] Reorganization plan is now materially implemented: canonical `src/` contains only tool/plugin source, project identity is restored, and release pipeline validates clean boundaries.
+- 2026-02-15T18:55:01Z [CODE] Requested plan is now persisted in-repo under `docs/plans/` and ready for execution tracking.
+- 2026-02-15T19:13:14Z [CODE] Repo is ready for an initial commit proposal with an exact include list and no personal/generated artifacts.
+- 2026-02-15T19:19:16Z [CODE] Initial commit proposal now has a deterministic, file-level staging list across source, docs, scripts, and fixture assets without embedded sub-repository metadata.

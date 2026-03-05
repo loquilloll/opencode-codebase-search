@@ -1,0 +1,33 @@
+{
+	"name": "opencode-codebase-search",
+	"version": "0.1.0",
+	"private": true,
+	"description": "OpenCode semantic codebase_search tool with Roo parity",
+	"type": "module",
+	"repository": {
+		"type": "git",
+		"url": "git@github-loquilloll:loquilloll/opencode-codebase-search.git"
+	},
+	"scripts": {
+		"sync:opencode": "node scripts/sync-opencode.mjs",
+		"test:focused": "tsx --test \"src/tools/codebase-search/__tests__/*.test.ts\"",
+		"verify:release": "node scripts/verify-release.mjs",
+		"build:release": "node scripts/build-release.mjs",
+		"release:prep": "npm run sync:opencode && npm run test:focused && npm run verify:release && npm run build:release"
+	},
+	"dependencies": {
+		"@aws-sdk/client-bedrock-runtime": "^3.882.0",
+		"@aws-sdk/credential-providers": "^3.882.0",
+		"@opencode-ai/plugin": "1.2.4",
+		"@qdrant/js-client-rest": "^1.15.1",
+		"ignore": "^7.0.5",
+		"jsonc-parser": "^3.3.1",
+		"tree-sitter-wasms": "^0.1.12",
+		"uuid": "^11.1.0",
+		"web-tree-sitter": "^0.25.10"
+	},
+	"devDependencies": {
+		"tsx": "^4.20.3",
+		"typescript": "^5.9.2"
+	}
+}

@@ -1,0 +1,9 @@
+{
+  "name": "mini-shop-fixture",
+  "private": true,
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "start": "node src/main.ts"
+  }
+}
