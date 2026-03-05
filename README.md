@@ -24,12 +24,20 @@ npm run sync:opencode
 ```bash
 npm run sync:opencode
 mkdir -p "$HOME/.config/opencode/tools" "$HOME/.config/opencode/plugins"
+mkdir -p "$HOME/.config/opencode/instructions"
 rm -rf "$HOME/.config/opencode/tools/codebase-search"
 cp -f ".opencode/tools/codebase_search.ts" "$HOME/.config/opencode/tools/codebase_search.ts"
 cp -R ".opencode/tools/codebase-search" "$HOME/.config/opencode/tools/codebase-search"
 cp -f ".opencode/plugins/codebase-index-worker.ts" "$HOME/.config/opencode/plugins/codebase-index-worker.ts"
+cp -f "instructions/codebase-search.md" "$HOME/.config/opencode/instructions/codebase-search.md"
 cd "$HOME/.config/opencode" && npm install --no-audit --no-fund
 cp -f "codebase-search.settings.jsonc" "$HOME/.config/opencode/codebase-search.settings.jsonc"
+```
+
+Also ensure `~/.config/opencode/opencode.jsonc` includes this in `instructions`:
+
+```json
+"~/.config/opencode/instructions/codebase-search.md"
 ```
 
 Verify from outside this repo:
@@ -93,6 +101,7 @@ Concurrent indexing can increase write load, but updates are idempotent by segme
 
 ## Docs
 
+- `instructions/codebase-search.md`
 - `docs/ARCHITECTURE.md`
 - `docs/RELEASING.md`
 - `CHANGELOG.md`

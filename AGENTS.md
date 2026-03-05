@@ -139,5 +139,10 @@ Do not commit these local/generated artifacts:
 - `dist/`
 - `node_modules/`
 
-## 9) Remote
+## 9) Privacy / PII
+- Do not commit personally identifiable information (PII) such as usernames, personal home paths, email addresses, API keys, or host-specific machine identifiers.
+- Use neutral placeholders in docs/examples (for example `/home/<user>/...`) instead of real local identities.
+- When PII appears in tracked content, scrub it before commit and keep continuity notes anonymized.
+
+## 10) Remote
 - Expected origin: `git@github-loquilloll:loquilloll/opencode-codebase-search.git`

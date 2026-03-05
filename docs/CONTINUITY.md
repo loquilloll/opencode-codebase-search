@@ -40,6 +40,10 @@
 - 2026-02-15T21:31:50Z [USER] Requested explicit Roo Code attribution in `README.md` for this tool.
 - 2026-02-15T21:36:05Z [USER] Requested instructions to clarify tool can run without Roo Code, explain Roo/OpenCode concurrent indexing implications, and add Docker Compose Qdrant setup instructions.
 - 2026-02-15T21:39:59Z [USER] Requested condensing README wording and removing repetitive phrasing.
+- 2026-02-16T00:18:44Z [USER] Requested scrubbing username references from `docs/CONTINUITY.md` and from git history.
+- 2026-02-16T00:35:55Z [USER] Requested committing instruction content from `~/.config/opencode/instructions/codebase-search.md` into this repository.
+- 2026-02-16T00:35:55Z [USER] Requested adding repository instruction-file copy step to install instructions.
+- 2026-02-16T00:35:55Z [USER] Requested adding an `AGENTS.md` rule to keep PII out of the repository.
 - 2026-02-15T18:55:01Z [USER] Requested writing the reorganization + OpenCode config prompting plan into a repository file.
 - 2026-02-15T18:55:01Z [CODE] Prepared and saved a concrete phased plan at `docs/plans/repo-reorg-and-opencode-config-plan.md`.
 
@@ -70,6 +74,7 @@
 - 2026-02-15T20:31:17Z [USER] Global tool availability should work from outside repository roots.
 - 2026-02-15T21:28:20Z [USER] Empty-string Qdrant API key should be treated as unset to avoid false insecure-key warnings.
 - 2026-02-15T21:36:05Z [USER] Roo and OpenCode are often used concurrently; docs/instructions should explicitly describe index trigger behavior in that workflow.
+- 2026-02-16T00:35:55Z [USER] Repository should include a committed instruction template and explicit PII-scrubbing policy in agent guidance.
 
 [PROGRESS]
 
@@ -159,6 +164,11 @@
 - 2026-02-15T21:36:05Z [CODE] Added `README.md` section `Qdrant with Docker Compose` with compose file, startup command, health check, and matching settings values.
 - 2026-02-15T21:36:05Z [CODE] Updated active global instruction file `~/.config/opencode/instructions/codebase-search.md` to state standalone usage, Roo/OpenCode coexistence behavior, and mode-trigger implications.
 - 2026-02-15T21:39:59Z [CODE] Rewrote `README.md` into a shorter structure while retaining required content: Roo attribution, global install steps, settings resolution, Docker Compose Qdrant setup, and Roo/OpenCode coexistence implications.
+- 2026-02-16T00:18:44Z [CODE] Replaced remaining user-name path occurrences in tracked docs with `/home/<user>` placeholders and committed the scrub with Qdrant warning fix/docs updates.
+- 2026-02-16T00:18:44Z [CODE] Rewrote git history (`git filter-branch`) to scrub legacy user-name path occurrences from prior commits and force-pushed rewritten `main`.
+- 2026-02-16T00:35:55Z [CODE] Added repository instruction file `instructions/codebase-search.md` mirroring active global tool guidance for portable setup.
+- 2026-02-16T00:35:55Z [CODE] Updated `README.md` global-install steps to copy `instructions/codebase-search.md` into `~/.config/opencode/instructions/` and ensure it is referenced in `opencode.jsonc`.
+- 2026-02-16T00:35:55Z [CODE] Added `AGENTS.md` privacy section requiring PII scrubbing and placeholder paths (`/home/<user>/...`).
 
 [DISCOVERIES]
 
@@ -223,6 +233,9 @@
 - 2026-02-15T20:45:17Z [TOOL] Post-sync smoke run from `/home/<user>` still executes `codebase_search` successfully with global install.
 - 2026-02-15T21:28:20Z [TOOL] Before fix, `opencode run ... codebase_search` emitted `Api key is used with unsecure connection.` twice when `qdrantApiKey` was `""` and URL used `http://`.
 - 2026-02-15T21:28:20Z [TOOL] After key normalization + global sync, repeated `opencode run` smoke test from `/home/<user>` completed with no insecure-key warning output.
+- 2026-02-16T00:18:44Z [TOOL] `git filter-branch` first attempt used `read -d` and failed under `/bin/sh` (`Illegal option -d`); rerun with a POSIX-compatible loop succeeded.
+- 2026-02-16T00:18:44Z [TOOL] Initial history grep still returned user-name matches until `refs/original/*` and reflogs were pruned; after `git gc --prune=now`, no matches remained in reachable history.
+- 2026-02-16T00:18:44Z [TOOL] `git push --force-with-lease origin main` was rejected once due stale lease; push with explicit lease hash succeeded.
 
 [OUTCOMES]
 
@@ -261,3 +274,5 @@
 - 2026-02-15T21:31:50Z [CODE] README now includes explicit Roo Code attribution for provenance and credit.
 - 2026-02-15T21:36:05Z [CODE] User-facing and instruction-layer docs now explicitly cover standalone use, concurrent Roo/OpenCode indexing implications, and local Docker Compose Qdrant setup.
 - 2026-02-15T21:39:59Z [CODE] README is now concise and task-focused without removing operational setup details.
+- 2026-02-16T00:18:44Z [CODE] Username references have been scrubbed from current docs and from reachable git history on `origin/main`.
+- 2026-02-16T00:35:55Z [CODE] Setup docs and agent policy now enforce repository-local instruction distribution and explicit PII hygiene.
