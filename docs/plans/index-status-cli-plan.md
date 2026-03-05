@@ -419,6 +419,7 @@ Run against the problematic workspace (for example `/home/<user>/Documents/pgit/
   - NDJSON iteration output (`--watch --compact`)
   - diff override behavior (`--watch --compact --no-skip-diff`)
   - clean SIGINT summary in human watch mode
+- Captured concurrent query-run evidence with non-zero watch deltas and indexing completion transitions (`true -> false -> true`) during live reconciliation.
 
 ## File Inventory
 

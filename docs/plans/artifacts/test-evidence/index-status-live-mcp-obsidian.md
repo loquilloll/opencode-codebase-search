@@ -13,19 +13,19 @@ Validate the index-status CLI against the real workspace referenced in the plan 
 
 ## Workspace and Settings
 
-- Worktree: `/home/alvins/Documents/pgit/mcp-obsidian`
-- Settings path resolved by CLI: `/home/alvins/.config/opencode/codebase-search.settings.jsonc`
+- Worktree: `/home/<user>/Documents/pgit/mcp-obsidian`
+- Settings path resolved by CLI: `/home/<user>/.config/opencode/codebase-search.settings.jsonc`
 - Provider/model: `gemini / gemini-embedding-001 (3072d)`
-- Qdrant: `http://192.168.10.72:6333`
+- Qdrant: `http://<qdrant-host>:6333`
 
 ## Commands
 
 ```bash
-npx --yes tsx scripts/codebase-index-status.ts --worktree "/home/alvins/Documents/pgit/mcp-obsidian"
-npx --yes tsx scripts/codebase-index-status.ts --worktree "/home/alvins/Documents/pgit/mcp-obsidian" --compact
-timeout -s INT 10 npx --yes tsx scripts/codebase-index-status.ts --worktree "/home/alvins/Documents/pgit/mcp-obsidian" --watch --interval-ms 3000 --compact
-timeout -s INT 8 npx --yes tsx scripts/codebase-index-status.ts --worktree "/home/alvins/Documents/pgit/mcp-obsidian" --watch --interval-ms 3000 --compact --no-skip-diff
-timeout -s INT 8 npx --yes tsx scripts/codebase-index-status.ts --worktree "/home/alvins/Documents/pgit/mcp-obsidian" --watch --interval-ms 2000
+npx --yes tsx scripts/codebase-index-status.ts --worktree "/home/<user>/Documents/pgit/mcp-obsidian"
+npx --yes tsx scripts/codebase-index-status.ts --worktree "/home/<user>/Documents/pgit/mcp-obsidian" --compact
+timeout -s INT 10 npx --yes tsx scripts/codebase-index-status.ts --worktree "/home/<user>/Documents/pgit/mcp-obsidian" --watch --interval-ms 3000 --compact
+timeout -s INT 8 npx --yes tsx scripts/codebase-index-status.ts --worktree "/home/<user>/Documents/pgit/mcp-obsidian" --watch --interval-ms 3000 --compact --no-skip-diff
+timeout -s INT 8 npx --yes tsx scripts/codebase-index-status.ts --worktree "/home/<user>/Documents/pgit/mcp-obsidian" --watch --interval-ms 2000
 ```
 
 ## One-shot Result Snapshot
@@ -69,3 +69,44 @@ timeout -s INT 8 npx --yes tsx scripts/codebase-index-status.ts --worktree "/hom
 - The CLI provides actionable per-mode troubleshooting data for this workspace in one-shot mode.
 - Watch mode behavior matches design in both machine-readable (NDJSON) and human-readable forms.
 - During this capture there was no concurrent active indexing run, so points/cache deltas stayed `0`; this is expected.
+
+## Concurrent query capture (non-zero watch deltas)
+
+Date: 2026-02-21
+
+### Commands
+
+```bash
+timeout -s INT 20 npx --yes tsx scripts/codebase-index-status.ts --worktree "/home/<user>/Documents/pgit/mcp-obsidian" --watch --interval-ms 1000 --compact > /tmp/index-status-watch-mcp-obsidian.ndjson &
+timeout 180 opencode run -m openai/gpt-5.3-codex --format json --dir "/home/<user>/Documents/pgit/mcp-obsidian" \
+  "Use ONLY the codebase_search tool. Call it with query 'indexing health probe', mode 'query', and maxResults 5. Return exactly the JSON result." \
+  > /tmp/index-status-query-mcp-obsidian.json
+```
+
+### Query run result (tool output)
+
+- `mode=query`
+- `indexing.reason=incremental-index-applied`
+- `processedFiles=7`
+- `skippedFiles=39`
+- `indexedBlocks=139`
+- `deletedFiles=0`
+
+### Watch transitions observed
+
+- Iteration 10: `qdrantPoints=-59` (`371 -> 312`), `indexingCompleteChanged=true` (`true -> false`)
+- Iteration 12: `qdrantPoints=+60` (`312 -> 372`)
+- Iteration 13: `qdrantPoints=+60` (`372 -> 432`)
+- Iteration 14: `qdrantPoints=+19` (`432 -> 451`), `indexingCompleteChanged=true` (`false -> true`)
+
+These transitions confirm watch-mode visibility into in-flight reconciliation progress and completion state.
+
+### Post-query one-shot snapshot
+
+- qdrant points: `451`
+- indexing complete: `true`
+- dry-run diff: `changed=0`, `new=0`, `deleted=0`, `estimatedBatches=0`
+- assessments:
+  - `disabled`: `ok`
+  - `query`: `ok` (`No pending reconciliation work; query mode should stay fast.`)
+  - `background`: `ok` (`Background appears caught up`)
