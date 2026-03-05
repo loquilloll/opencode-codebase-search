@@ -66,6 +66,11 @@
 - 2026-02-19T13:30:16Z [USER] Requested moving on to Phase 3 (indexer integration) for symlink support.
 - 2026-02-19T13:41:06Z [USER] Requested moving on to Phase 4 (symlink regression test matrix).
 - 2026-02-19T14:39:28Z [USER] Requested moving on to Phase 5 (documentation and release gates).
+- 2026-02-19T16:05:45Z [USER] Requested relocating cache to `~/.local/share/opencode-codebase-search/ws-<sha256(worktree)[:16]>.cache.json` with one file per workspace and asked for a markdown plan with commit-safe phases.
+- 2026-02-19T16:08:45Z [USER] Requested implementing Phase 1 of the cache-relocation plan.
+- 2026-02-19T16:11:22Z [USER] Requested implementing Phase 2 of the cache-relocation plan.
+- 2026-02-19T16:14:35Z [USER] Requested implementing Phase 3 of the cache-relocation plan.
+- 2026-02-19T16:54:55Z [USER] Requested implementing Phase 4 of the cache-relocation plan.
 
 [DECISIONS]
 
@@ -103,6 +108,7 @@
 - 2026-02-17T12:40:31Z [USER] `semantic_search` service config defaults are fixed at `~/.config/semantic_search/semantic-search.settings.json` and `~/.config/semantic_search/semantic-search.env`.
 - 2026-02-17T12:47:02Z [USER] Installed artifacts for `codebase_search` and `semantic_search` must remain separated; installers must be independent.
 - 2026-02-19T12:53:46Z [USER] Approved symlink indexing scope that follows links resolving outside the worktree.
+- 2026-02-19T16:05:45Z [USER] Cache location is now fixed to `~/.local/share/opencode-codebase-search/ws-<sha256(worktree)[:16]>.cache.json` (single-file-per-workspace layout, no per-workspace folder).
 
 [PROGRESS]
 
@@ -210,6 +216,11 @@
 - 2026-02-19T13:30:16Z [CODE] Implemented Phase 3 integration by updating `src/tools/codebase-search/indexer.ts` to consume scanner logical/read paths, reading and hashing via resolved paths while keeping cache keys and payload paths logical, and extending `src/tools/codebase-search/parser.ts` with parse-path hints for extension-aware parsing on resolved targets.
 - 2026-02-19T13:41:06Z [CODE] Implemented Phase 4 regression coverage by adding `.ignore` logical-alias symlink test to `src/tools/codebase-search/__tests__/scanner.test.ts`, completing the planned symlink traversal matrix.
 - 2026-02-19T14:39:28Z [CODE] Implemented Phase 5 docs updates in `src/tools/codebase-search/README.md` and `README.md`, documenting symlink settings/env toggles and traversal behavior, then ran full release gates.
+- 2026-02-19T16:05:45Z [CODE] Added `docs/plans/cache-relocation-local-share-plan.md` with commit-safe phases for cache-path contract, move-based legacy migration, test wiring, and docs/release gates.
+- 2026-02-19T16:08:45Z [CODE] Implemented cache-relocation Phase 1 in `src/tools/codebase-search/config.ts`: canonical cache path now resolves to `~/.local/share/opencode-codebase-search/ws-<hash>.cache.json`, with exported helpers for canonical and legacy cache file paths.
+- 2026-02-19T16:11:22Z [CODE] Implemented cache-relocation Phase 2 in `src/tools/codebase-search/cache.ts`: `IndexCache` now accepts an optional legacy cache path and performs one-time move migration (`rename`, `EXDEV` fallback `copyFile + unlink`) plus best-effort legacy cleanup when canonical cache exists.
+- 2026-02-19T16:14:35Z [CODE] Implemented cache-relocation Phase 3 by wiring `src/tools/codebase-search/indexer.ts` to pass canonical+legacy paths into `IndexCache` and adding regression coverage in `src/tools/codebase-search/__tests__/cache.test.ts` for path shape, move migration, and canonical-preferred behavior.
+- 2026-02-19T16:54:55Z [CODE] Implemented cache-relocation Phase 4 docs/release-gates by updating cache-location guidance in `README.md` and `src/tools/codebase-search/README.md`, then running sync/test/verify gates.
 
 [DISCOVERIES]
 
@@ -282,6 +293,10 @@
 - 2026-02-19T13:30:16Z [TOOL] Phase 3 validation passed after integration changes: `npm run sync:opencode`, `npm run test:focused` (`tests=8`, `pass=8`, `fail=0`), and `npm run verify:release` all succeeded.
 - 2026-02-19T13:41:06Z [TOOL] Phase 4 validation passed: `npm run test:focused` completed with symlink regression suite (`tests=9`, `pass=9`, `fail=0`).
 - 2026-02-19T14:39:28Z [TOOL] Phase 5 validation passed: `npm run sync:opencode`, `npm run test:focused` (`tests=9`, `pass=9`, `fail=0`), and `npm run verify:release` all succeeded after docs updates.
+- 2026-02-19T16:08:45Z [TOOL] After cache-path Phase 1 changes, `npm run test:focused` still passed (`tests=9`, `pass=9`, `fail=0`).
+- 2026-02-19T16:11:22Z [TOOL] After cache-migration Phase 2 changes, `npm run test:focused` still passed (`tests=9`, `pass=9`, `fail=0`).
+- 2026-02-19T16:14:35Z [TOOL] After Phase 3 wiring/tests, `npm run test:focused` passed with expanded suite (`tests=12`, `pass=12`, `fail=0`).
+- 2026-02-19T16:54:55Z [TOOL] Phase 4 validation gates passed: `npm run sync:opencode` generated runtime, `npm run test:focused` passed (`tests=12`, `pass=12`, `fail=0`), and `npm run verify:release` passed.
 
 [OUTCOMES]
 
@@ -335,3 +350,8 @@
 - 2026-02-19T13:30:16Z [CODE] Symlink feature Phase 3 is complete: indexer now separates logical alias paths from resolved read paths while preserving logical cache/payload semantics.
 - 2026-02-19T13:41:06Z [CODE] Symlink feature Phase 4 is complete: regression matrix now includes `.ignore` handling on logical symlink aliases with all focused tests passing.
 - 2026-02-19T14:39:28Z [CODE] Symlink feature Phase 5 is complete: user-facing and implementation docs now describe symlink controls/behavior, and release gates pass.
+- 2026-02-19T16:05:45Z [CODE] Cache-relocation plan is now persisted in `docs/plans/cache-relocation-local-share-plan.md` and ready for phased implementation.
+- 2026-02-19T16:08:45Z [CODE] Cache-relocation Phase 1 is complete: config contract now points cache writes/reads to `~/.local/share/opencode-codebase-search/ws-<hash>.cache.json` and exposes legacy path helper for Phase 2 migration.
+- 2026-02-19T16:11:22Z [CODE] Cache-relocation Phase 2 is complete at cache-layer level; Phase 3 wiring remains to pass legacy path from indexer and add regression tests for migration behavior.
+- 2026-02-19T16:14:35Z [CODE] Cache-relocation Phase 3 is complete: indexer now supplies legacy path for migration and focused regression tests lock path/migration semantics.
+- 2026-02-19T16:54:55Z [CODE] Cache-relocation Phase 4 is complete: docs now describe canonical/legacy cache paths and migration behavior, and release gates remain green.

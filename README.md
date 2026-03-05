@@ -69,6 +69,13 @@ Env overrides for symlink behavior:
 - `CODEBASE_SEARCH_FOLLOW_SYMLINKS`
 - `CODEBASE_SEARCH_FOLLOW_EXTERNAL_SYMLINKS`
 
+Cache file location:
+
+- Canonical cache path: `~/.local/share/opencode-codebase-search/ws-<sha256(worktree)[:16]>.cache.json`
+- Legacy cache path: `<worktree>/.opencode/codebase-search/ws-<sha256(worktree)[:16]>.cache.json`
+- On first load after upgrade, the tool moves a legacy cache file to the canonical path when the canonical file does not exist.
+- If both files exist, the canonical file is used and legacy cleanup is attempted best-effort.
+
 ## Qdrant with Docker Compose
 
 `docker-compose.yml`:

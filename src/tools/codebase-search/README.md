@@ -128,6 +128,8 @@ Behavior:
 - Uses path-segment payload filters for directory-prefix scoping
 - If an existing Roo index is found and local cache is missing, query mode performs one-time reconciliation (no duplicate collection creation)
 - If collection dimension differs from active model dimension, collection is recreated to match Roo behavior
+- Cache file is stored per workspace at `~/.local/share/opencode-codebase-search/ws-<sha256(worktree)[:16]>.cache.json`
+- Legacy workspace-local cache (`<worktree>/.opencode/codebase-search/ws-<sha256(worktree)[:16]>.cache.json`) is moved on first load when canonical cache is missing
 
 ## Ignore Behavior
 
