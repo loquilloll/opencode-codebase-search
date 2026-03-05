@@ -411,6 +411,15 @@ Run against the problematic workspace (for example `/home/<user>/Documents/pgit/
 - The original issue (full index taking too long) is explainable from a single status run via reconciliation workload metrics.
 - Watch mode can monitor progress during a live index run and is stable under repeated polling.
 
+### 7) Captured live evidence (2026-02-21)
+
+- Workspace run: `/home/<user>/Documents/pgit/mcp-obsidian`
+- Evidence file: `docs/plans/artifacts/test-evidence/index-status-live-mcp-obsidian.md`
+- Captured one-shot diagnostics plus watch-mode verification for:
+  - NDJSON iteration output (`--watch --compact`)
+  - diff override behavior (`--watch --compact --no-skip-diff`)
+  - clean SIGINT summary in human watch mode
+
 ## File Inventory
 
 ### New files

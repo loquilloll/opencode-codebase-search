@@ -252,6 +252,7 @@
 - 2026-02-21T20:27:33Z [CODE] Continued the index-status plan document by adding a post-plan Phase 5 hardening section (sync/runtime settings guard + precedence regression tests), updating file inventory, and recording regression mitigation risk.
 - 2026-02-21T20:20:30Z [CODE] Added release hardening in `scripts/verify-release.mjs` to fail when `.opencode/codebase-search.settings.jsonc` exists, preserving all existing runtime boundary checks.
 - 2026-02-21T20:20:30Z [CODE] Added focused regression coverage at `src/tools/codebase-search/__tests__/config.test.ts` for `getSettingsPath()` precedence: env override > worktree `.opencode` > global `~/.config/opencode` when worktree file is absent.
+- 2026-02-21T20:31:42Z [CODE] Executed live testing methodology commands from `docs/plans/index-status-cli-plan.md` against `/home/<user>/Documents/pgit/mcp-obsidian` and captured results in `docs/plans/artifacts/test-evidence/index-status-live-mcp-obsidian.md`.
 
 [DISCOVERIES]
 
@@ -341,6 +342,8 @@
 - 2026-02-21T20:16:33Z [TOOL] Post-change check `npx --yes tsx scripts/codebase-index-status.ts --worktree . --compact` reports `config.settingsFilePath=/home/alvins/.config/opencode/codebase-search.settings.jsonc`, and `.opencode/` now contains only `package.json`, `plugins/`, and `tools/`.
 - 2026-02-21T20:27:33Z [TOOL] `docs/plans/index-status-cli-plan.md` now includes explicit Phase 5 hardening items and inventory rows for `scripts/sync-opencode.mjs`, `scripts/verify-release.mjs`, and `src/tools/codebase-search/__tests__/config.test.ts`.
 - 2026-02-21T20:20:30Z [TOOL] Hardening-phase gates passed after new guard/tests: `npm run sync:opencode` succeeded, `npm run test:focused` passed (`tests=20`, `pass=20`, `fail=0`), and `npm run verify:release` passed with runtime settings-file absence enforced.
+- 2026-02-21T20:31:42Z [TOOL] Live status run on `/home/<user>/Documents/pgit/mcp-obsidian` reported `collection=ws-ff135260ca5173ef`, `points=371`, `cacheEntries=46`, `diff.changed=7`, `estimatedBatches=3`, with assessments `disabled=ok`, `query=warning`, `background=warning`.
+- 2026-02-21T20:31:42Z [TOOL] Watch-mode verification passed in both outputs: NDJSON iterations included required `iteration` + `deltas` fields, `--no-skip-diff` produced non-null `status.diff`, and human watch exited on SIGINT with aggregate summary.
 
 [OUTCOMES]
 
@@ -409,3 +412,4 @@
 - 2026-02-21T20:16:33Z [CODE] The recurring post-build global-settings override issue is resolved for this workspace: repeated sync builds preserve global config selection without deleting `.opencode`.
 - 2026-02-21T20:27:33Z [CODE] The plan artifact now reflects delivered scope beyond original Phase 4, including hardening/regression guard work needed to keep settings precedence stable.
 - 2026-02-21T20:20:30Z [CODE] Global-settings protection now has regression guards at both release-boundary and config-resolution layers, reducing risk of silent reintroduction of worktree runtime overrides.
+- 2026-02-21T20:31:42Z [CODE] Plan testing methodology now has concrete live-workspace evidence for one-shot and watch diagnostics, including diff-override and signal-stop behavior.
