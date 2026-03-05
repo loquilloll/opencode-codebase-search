@@ -10,6 +10,7 @@
 	},
 	"scripts": {
 		"sync:opencode": "node scripts/sync-opencode.mjs",
+		"index:status": "tsx scripts/codebase-index-status.ts",
 		"test:focused": "tsx --test \"src/tools/codebase-search/__tests__/*.test.ts\"",
 		"verify:release": "node scripts/verify-release.mjs",
 		"build:release": "node scripts/build-release.mjs",

@@ -80,6 +80,8 @@
 - 2026-02-21T10:25:00Z [CODE] Updated `docs/plans/index-status-cli-plan.md` with a dedicated `Testing Methodology` section covering automated tests, one-shot CLI smoke tests, live per-mode troubleshooting matrix, watch-mode verification, final release gates, and a concrete definition of test success.
 - 2026-02-21T18:26:47Z [USER] Requested implementing each phase using the `general` subagent and stopping for review between phases.
 - 2026-02-21T18:26:47Z [CODE] Started implementation execution and dispatched Phase 1 to `general` subagent only, deferring Phase 2+ pending user review.
+- 2026-02-21T18:43:27Z [USER] Requested implementing index-status Phase 2 only (CLI one-shot mode), including required flags, package script wiring, focused tests, smoke checks, and continuity update.
+- 2026-02-21T18:43:27Z [CODE] Implemented Phase 2 scope only (no watch mode changes) with new CLI entrypoint and additive `package.json` script update.
 
 [DECISIONS]
 
@@ -234,6 +236,8 @@
 - 2026-02-20T21:06:16Z [CODE] Ran local+remote PII audit for tracked files and git history (`git grep` + `git log -G` checks), confirmed file-content patterns clear, identified author metadata as remaining PII, and performed approved full-history metadata rewrite with force-push.
 - 2026-02-21T10:25:00Z [CODE] Expanded `docs/plans/index-status-cli-plan.md` with explicit testing methodology for all indexing modes, including live verification focused on the original full-index-slowness issue.
 - 2026-02-21T18:26:47Z [CODE] Implemented index-status Phase 1 core: added status types, promoted `QdrantIndexStore.getCollectionInfo()` visibility, introduced read-only `collectIndexStatus()` with dry-run diff + mode assessments, and added focused `status.test.ts` coverage.
+- 2026-02-21T18:43:27Z [CODE] Implemented Phase 2 CLI one-shot diagnostics in `scripts/codebase-index-status.ts` with argv parsing (`--worktree`, `--timeout-ms`, `--skip-diff`, `--json`, `--compact`, `--help`), worktree-directory validation, `collectIndexStatus()` wiring, human/JSON renderers, and clean SIGINT handling.
+- 2026-02-21T18:43:27Z [CODE] Added `package.json` script `index:status` -> `tsx scripts/codebase-index-status.ts`.
 
 [DISCOVERIES]
 
@@ -313,6 +317,8 @@
 - 2026-02-19T16:14:35Z [TOOL] After Phase 3 wiring/tests, `npm run test:focused` passed with expanded suite (`tests=12`, `pass=12`, `fail=0`).
 - 2026-02-19T16:54:55Z [TOOL] Phase 4 validation gates passed: `npm run sync:opencode` generated runtime, `npm run test:focused` passed (`tests=12`, `pass=12`, `fail=0`), and `npm run verify:release` passed.
 - 2026-02-21T18:26:47Z [TOOL] Phase 1 validation passed: `npm run test:focused` completed with `tests=17`, `pass=17`, `fail=0`; run emitted one non-fatal Qdrant compatibility warning during unreachable-probe coverage.
+- 2026-02-21T18:43:27Z [TOOL] Phase 2 validation passed: `npm run test:focused` completed with `tests=17`, `pass=17`, `fail=0`.
+- 2026-02-21T18:43:27Z [TOOL] Phase 2 one-shot smoke checks all succeeded: `npx --yes tsx scripts/codebase-index-status.ts --worktree .`, `--json`, `--compact`, and `--skip-diff`; in this environment Qdrant probe reported `reachable=false` with `fetch failed`, and CLI still produced structured diagnostics/output in all modes.
 
 [OUTCOMES]
 
@@ -374,3 +380,4 @@
 - 2026-02-20T21:06:16Z [CODE] Repository/file-content scan and local/remote git-history scan are now clean for the targeted PII patterns, and commit author metadata has been anonymized across rewritten history on `main`.
 - 2026-02-21T00:00:00Z [CODE] Expanded `docs/ARCHITECTURE.md` with 7 Mermaid diagrams: C4 System Context, Container View, Component/Module Boundaries, Query-Mode Sequence Flow, Indexing Pipeline Activity, Index Mode State Lifecycle, and Configuration Resolution Flow, plus Source/Runtime Layout diagram.
 - 2026-02-21T18:26:47Z [CODE] Index-status implementation is now in phased execution: Phase 1 is complete and validated; Phase 2+ remains intentionally paused for user review per stop-between-phases instruction.
+- 2026-02-21T18:43:27Z [CODE] Index-status Phase 2 is complete and validated: one-shot CLI output path is wired for human-readable and JSON diagnostics, while Phase 3 watch mode remains intentionally unimplemented.
