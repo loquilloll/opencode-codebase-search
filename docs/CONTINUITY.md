@@ -32,6 +32,10 @@
 - 2026-02-15T17:29:32Z [USER] Requested codebase analysis and a ~150-line `AGENTS.md` covering build/lint/test commands (including single-test usage), code style guidelines, and any Cursor/Copilot rules.
 - 2026-02-15T19:05:57Z [USER] Confirmed tool usage guidance will come from OpenCode config/system prompt and requested executing the persisted reorganization plan (`implement`).
 - 2026-02-15T19:13:14Z [USER] Requested continuation with two actions: (1) prepare clean initial commit proposal with exact staged file list, (2) perform docs consistency sweep for stale `plans/` references in non-historical docs.
+- 2026-02-15T20:31:17Z [USER] Requested global installation for OpenCode config (`install globally for my opencode config`).
+- 2026-02-15T20:33:18Z [USER] Requested README updates to explicitly document the exact global install steps that were just executed.
+- 2026-02-15T20:36:34Z [USER] Requested updating OpenCode `instructions` configuration to enable recommended `codebase_search` usage guidance.
+- 2026-02-15T20:45:17Z [USER] Clarified that the tool description should align with Roo prompt source at `/home/<user>/Documents/pgit/Roo-Code/src/core/prompts/tools/native-tools/codebase_search.ts`.
 - 2026-02-15T18:55:01Z [USER] Requested writing the reorganization + OpenCode config prompting plan into a repository file.
 - 2026-02-15T18:55:01Z [CODE] Prepared and saved a concrete phased plan at `docs/plans/repo-reorg-and-opencode-config-plan.md`.
 
@@ -59,6 +63,7 @@
 - 2026-02-15T17:23:55Z [USER] Planning artifacts should live under `docs/plans/` and remain excluded from release assets.
 - 2026-02-15T17:29:32Z [USER] `AGENTS.md` should serve as the agent-facing operating guide for this repository.
 - 2026-02-15T19:05:57Z [USER] Prompting contract should be concise and config-driven rather than embedded in extensive repository docs.
+- 2026-02-15T20:31:17Z [USER] Global tool availability should work from outside repository roots.
 
 [PROGRESS]
 
@@ -131,6 +136,15 @@
 - 2026-02-15T19:19:16Z [CODE] Removed embedded fixture git metadata at `docs/plans/artifacts/test-fixtures/mini-shop/.git` to make fixture files directly trackable in the main repository.
 - 2026-02-15T19:19:16Z [CODE] Updated runbook guidance to initialize fixture git root locally (`git init`) instead of relying on committed nested `.git` metadata.
 - 2026-02-15T19:19:16Z [CODE] Expanded non-historical path sweep updates in evidence docs for relocated references (`plans/...` -> `docs/plans/...`) where they function as navigational links.
+- 2026-02-15T20:31:17Z [CODE] Implemented global-settings fallback in `src/tools/codebase-search/config.ts`: after env override and `<worktree>/.opencode/...`, it now checks `~/.config/opencode/codebase-search.settings.jsonc`.
+- 2026-02-15T20:31:17Z [CODE] Updated `README.md` to document settings resolution order including global config fallback.
+- 2026-02-15T20:31:17Z [CODE] Installed global tool/plugin payload into `~/.config/opencode/tools/` and `~/.config/opencode/plugins/` and copied personal settings to `~/.config/opencode/codebase-search.settings.jsonc`.
+- 2026-02-15T20:31:17Z [CODE] Expanded `~/.config/opencode/package.json` dependencies and ran `npm install` in global config directory for runtime imports.
+- 2026-02-15T20:33:18Z [CODE] Added a dedicated `README.md` section `Install globally for OpenCode config` with exact command sequence for runtime generation, global copy, dependency install, settings copy, and verification.
+- 2026-02-15T20:36:34Z [CODE] Added global instruction file `~/.config/opencode/instructions/codebase-search.md` containing tool-usage, mode-selection, and response-grounding policy.
+- 2026-02-15T20:36:34Z [CODE] Updated `~/.config/opencode/opencode.jsonc` `instructions` array to include `~/.config/opencode/instructions/codebase-search.md` alongside shell strategy guidance.
+- 2026-02-15T20:45:17Z [CODE] Updated `src/tools/codebase_search.ts` description and core argument descriptions to match Roo's native `codebase_search` prompt contract (including the critical "use first" guidance), while retaining local `mode` and `maxResults` parameters.
+- 2026-02-15T20:45:17Z [CODE] Updated global instruction file `~/.config/opencode/instructions/codebase-search.md` to align wording with Roo description and resynced global tool/plugin files from generated `.opencode` output.
 
 [DISCOVERIES]
 
@@ -186,6 +200,13 @@
 - 2026-02-15T19:13:14Z [TOOL] Staging inventory extraction command: `git ls-files -o --exclude-standard`.
 - 2026-02-15T19:19:16Z [TOOL] Before removing fixture `.git`, `git status --untracked-files=all` collapsed fixture as a single directory entry and `git add` on the directory failed with "does not have a commit checked out".
 - 2026-02-15T19:19:16Z [TOOL] After removing fixture `.git`, status now reports exact fixture files (including `.opencode` symlink and source files), enabling precise initial commit staging.
+- 2026-02-15T20:31:17Z [TOOL] OpenCode docs confirm global custom directories are first-class (`~/.config/opencode/tools/`, `~/.config/opencode/plugins/`) and merge with project configs.
+- 2026-02-15T20:31:17Z [TOOL] Global availability validated from `/home/<user>` via `opencode run ... codebase_search` returning successful tool output instead of missing-tool/provider errors.
+- 2026-02-15T20:31:17Z [TOOL] `opencode debug config` from `/home/<user>` shows plugin registration: `file:///home/<user>/.config/opencode/plugins/codebase-index-worker.ts`.
+- 2026-02-15T20:33:18Z [TOOL] README now includes the same verification command used live (`opencode run ... --dir "$HOME" ... codebase_search`).
+- 2026-02-15T20:36:34Z [TOOL] `opencode debug config` confirms active instructions now include both `~/.config/opencode/plugin/shell-strategy/shell_strategy.md` and `~/.config/opencode/instructions/codebase-search.md`.
+- 2026-02-15T20:45:17Z [TOOL] Verified Roo source description content from `/home/<user>/Documents/pgit/Roo-Code/src/core/prompts/tools/native-tools/codebase_search.ts` and mirrored it in project/global tool-facing guidance.
+- 2026-02-15T20:45:17Z [TOOL] Post-sync smoke run from `/home/<user>` still executes `codebase_search` successfully with global install.
 
 [OUTCOMES]
 
@@ -216,3 +237,7 @@
 - 2026-02-15T18:55:01Z [CODE] Requested plan is now persisted in-repo under `docs/plans/` and ready for execution tracking.
 - 2026-02-15T19:13:14Z [CODE] Repo is ready for an initial commit proposal with an exact include list and no personal/generated artifacts.
 - 2026-02-15T19:19:16Z [CODE] Initial commit proposal now has a deterministic, file-level staging list across source, docs, scripts, and fixture assets without embedded sub-repository metadata.
+- 2026-02-15T20:31:17Z [CODE] Global install path is now working for this user profile with config-driven loading from `~/.config/opencode`.
+- 2026-02-15T20:33:18Z [CODE] Repository docs now include reproducible, copy-paste global install instructions aligned with the performed installation flow.
+- 2026-02-15T20:36:34Z [CODE] Recommended `codebase_search` instruction policy is now enabled in global OpenCode settings.
+- 2026-02-15T20:45:17Z [CODE] Tool description/prompting is now aligned with Roo's canonical `codebase_search` description in both source and active global OpenCode setup.

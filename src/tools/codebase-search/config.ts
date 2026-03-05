@@ -1,4 +1,5 @@
 import fs from "fs"
+import os from "os"
 import path from "path"
 import { execSync } from "child_process"
 import { parse as parseJsonc } from "jsonc-parser"
@@ -150,7 +151,17 @@ function settingsFilePath(worktree: string): string {
 		return path.isAbsolute(overridePath) ? overridePath : path.join(worktree, overridePath)
 	}
 
-	return path.join(worktree, ".opencode", "codebase-search.settings.jsonc")
+	const worktreeSettingsPath = path.join(worktree, ".opencode", "codebase-search.settings.jsonc")
+	if (fs.existsSync(worktreeSettingsPath)) {
+		return worktreeSettingsPath
+	}
+
+	const globalSettingsPath = path.join(os.homedir(), ".config", "opencode", "codebase-search.settings.jsonc")
+	if (fs.existsSync(globalSettingsPath)) {
+		return globalSettingsPath
+	}
+
+	return worktreeSettingsPath
 }
 
 function loadSettingsFromJsonc(worktree: string): SettingsFile {
