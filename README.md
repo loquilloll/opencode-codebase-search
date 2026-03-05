@@ -58,10 +58,12 @@ opencode run -m openai/gpt-5.3-codex --format json --dir "$HOME" \
 
 If Qdrant auth is disabled, set `qdrantApiKey` to `""` or omit it.
 
+`npm run sync:opencode` does not generate `<worktree>/.opencode/codebase-search.settings.jsonc`, so global settings remain active unless you intentionally create a worktree-local settings file.
+
 Settings resolution order:
 
 1. `CODEBASE_SEARCH_SETTINGS_FILE`
-2. `<worktree>/.opencode/codebase-search.settings.jsonc`
+2. `<worktree>/.opencode/codebase-search.settings.jsonc` (if present)
 3. `~/.config/opencode/codebase-search.settings.jsonc`
 
 Env overrides for symlink behavior:
@@ -113,6 +115,38 @@ If Roo Code and OpenCode share the same worktree and Qdrant, both can update the
 - `background`: return immediately and schedule refresh (plugin events can also schedule refresh)
 
 Concurrent indexing can increase write load, but updates are idempotent by segment hash.
+
+## Index status
+
+Use the index-status CLI to inspect index health without triggering indexing writes:
+
+```bash
+npm run index:status -- --worktree .
+```
+
+Watch mode (polling diagnostics):
+
+```bash
+npm run index:status -- --worktree . --watch --interval-ms 2000
+```
+
+Supported flags:
+
+- `--worktree <path>`: target workspace path (default current directory)
+- `--timeout-ms <ms>`: timeout for Qdrant probes
+- `--skip-diff`: skip dry-run reconciliation diff (faster, less query/background certainty)
+- `--no-skip-diff`: force dry-run diff (useful in watch mode because watch defaults to `--skip-diff`)
+- `--watch`: keep polling status until interrupted
+- `--interval-ms <ms>`: polling interval used with `--watch`
+- `--json`: pretty JSON output
+- `--compact`: compact JSON output (watch emits NDJSON line-per-iteration)
+- `--help`: show CLI usage
+
+Diagnostic value by mode:
+
+- `disabled`: confirms whether current indexed points/metadata are sufficient for immediate search-only queries
+- `query`: estimates reconciliation workload (changed/new/deleted files, estimated blocks/batches) before a query-triggered refresh
+- `background`: shows freshness/staleness risk using last completion time plus pending reconciliation workload
 
 ## Docs
 

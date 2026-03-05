@@ -17,7 +17,9 @@ If these files are added later, apply them in addition to this document.
 ## 3) Repository Map
 - `src/tools/codebase_search.ts` - OpenCode tool entrypoint
 - `src/tools/codebase-search/` - core index/search implementation
+- `src/tools/codebase-search/status.ts` - read-only index status collector and diagnostics
 - `src/plugins/codebase-index-worker.ts` - background indexing plugin
+- `scripts/codebase-index-status.ts` - index status CLI (one-shot + watch)
 - `scripts/sync-opencode.mjs` - generate `.opencode/` runtime from `src/`
 - `scripts/verify-release.mjs` - enforce runtime/release boundaries
 - `scripts/build-release.mjs` - create release tarball in `dist/`
@@ -37,6 +39,11 @@ npm install --no-audit --no-fund
 ### Build / Generate Runtime
 ```bash
 npm run sync:opencode
+```
+
+### Index Diagnostics
+```bash
+npm run index:status
 ```
 
 ### Tests (focused suite)

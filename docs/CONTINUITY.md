@@ -84,6 +84,8 @@
 - 2026-02-21T18:43:27Z [CODE] Implemented Phase 2 scope only (no watch mode changes) with new CLI entrypoint and additive `package.json` script update.
 - 2026-02-21T18:55:59Z [USER] Requested implementing index-status Phase 3 only (watch mode) with interval controls, watch deltas, NDJSON behavior for JSON/compact, clean signal stop summary, focused validation, and continuity updates.
 - 2026-02-21T18:55:59Z [CODE] Started Phase 3 implementation in `scripts/codebase-index-status.ts` with additive watch-mode scope and no Phase 4 docs sweep beyond continuity entries.
+- 2026-02-21T20:09:28Z [USER] Requested implementing index-status Phase 4 only (docs + release gates): update `README.md`, `src/tools/codebase-search/README.md`, `AGENTS.md`, and `docs/CONTINUITY.md`, then run `sync:opencode`, `test:focused`, and `verify:release`.
+- 2026-02-21T20:14:58Z [USER] Reported that local `.opencode` keeps interfering with global OpenCode settings after builds and requested removing this friction.
 
 [DECISIONS]
 
@@ -123,6 +125,7 @@
 - 2026-02-19T12:53:46Z [USER] Approved symlink indexing scope that follows links resolving outside the worktree.
 - 2026-02-19T16:05:45Z [USER] Cache location is now fixed to `~/.local/share/opencode-codebase-search/ws-<sha256(worktree)[:16]>.cache.json` (single-file-per-workspace layout, no per-workspace folder).
 - 2026-02-20T21:06:16Z [USER] Approved rewriting local and remote commit metadata to remove personal author PII from git history.
+- 2026-02-21T20:14:58Z [USER] Build-time runtime generation should not recreate `.opencode/codebase-search.settings.jsonc`; global settings should remain the default unless a worktree-local override is intentionally created.
 
 [PROGRESS]
 
@@ -241,6 +244,9 @@
 - 2026-02-21T18:43:27Z [CODE] Implemented Phase 2 CLI one-shot diagnostics in `scripts/codebase-index-status.ts` with argv parsing (`--worktree`, `--timeout-ms`, `--skip-diff`, `--json`, `--compact`, `--help`), worktree-directory validation, `collectIndexStatus()` wiring, human/JSON renderers, and clean SIGINT handling.
 - 2026-02-21T18:43:27Z [CODE] Added `package.json` script `index:status` -> `tsx scripts/codebase-index-status.ts`.
 - 2026-02-21T18:55:59Z [CODE] Implemented index-status Phase 3 watch mode in `scripts/codebase-index-status.ts`: added `--watch`, `--interval-ms`, `--no-skip-diff`, watch-loop polling with default `skipDiff=true` (watch-only), per-iteration deltas, human clear-screen rendering, NDJSON watch output for JSON/compact, and SIGINT/SIGTERM graceful stop with human final summary.
+- 2026-02-21T20:09:28Z [CODE] Implemented index-status Phase 4 docs/release-gates scope: added README index-status usage/flags/mode-value docs, added developer read-only status diagnostics note in `src/tools/codebase-search/README.md`, updated `AGENTS.md` repository map + command list for status tooling, and ran required validation gates.
+- 2026-02-21T20:14:58Z [CODE] Updated `scripts/sync-opencode.mjs` to stop writing `.opencode/codebase-search.settings.jsonc` during runtime generation and updated settings docs in `README.md` and `src/tools/codebase-search/README.md` to reflect global-default behavior with optional worktree override.
+- 2026-02-21T20:16:33Z [CODE] Re-ran `sync:opencode`/`test:focused`/`verify:release` and validated status CLI now resolves settings from `~/.config/opencode/codebase-search.settings.jsonc` with no runtime-local settings file generated.
 
 [DISCOVERIES]
 
@@ -325,6 +331,9 @@
 - 2026-02-21T18:55:59Z [TOOL] Phase 3 validation passed: `npm run test:focused` completed with `tests=17`, `pass=17`, `fail=0`.
 - 2026-02-21T18:55:59Z [TOOL] One-shot sanity after watch changes succeeded: `npx --yes tsx scripts/codebase-index-status.ts --worktree . --compact` returned expected compact JSON status payload.
 - 2026-02-21T18:55:59Z [TOOL] Watch-mode smoke checks succeeded with timeout-driven interrupts: human watch (`timeout -s INT 7 ... --watch --interval-ms 1000`) printed iterative clear-screen tables and clean stop summary with total elapsed/aggregate deltas; compact watch (`timeout -s INT 7 ... --watch --interval-ms 1000 --compact`) emitted multi-line NDJSON with `iteration` + `deltas`; `--no-skip-diff` override (`timeout -s INT 4 ... --watch --compact --no-skip-diff`) returned watch entries with non-null `status.diff`.
+- 2026-02-21T20:09:28Z [TOOL] Phase 4 release-gate validation succeeded: `npm run sync:opencode` generated runtime, `npm run test:focused` passed (`tests=17`, `pass=17`, `fail=0`), and `npm run verify:release` passed; focused tests still emit the known non-fatal Qdrant version-check warning during unreachable-probe coverage.
+- 2026-02-21T20:14:58Z [TOOL] `scripts/sync-opencode.mjs` previously copied `codebase-search.settings.example.jsonc` into `.opencode/codebase-search.settings.jsonc`, which made worktree-local settings exist after every sync and take precedence over global config.
+- 2026-02-21T20:16:33Z [TOOL] Post-change check `npx --yes tsx scripts/codebase-index-status.ts --worktree . --compact` reports `config.settingsFilePath=/home/alvins/.config/opencode/codebase-search.settings.jsonc`, and `.opencode/` now contains only `package.json`, `plugins/`, and `tools/`.
 
 [OUTCOMES]
 
@@ -388,3 +397,6 @@
 - 2026-02-21T18:26:47Z [CODE] Index-status implementation is now in phased execution: Phase 1 is complete and validated; Phase 2+ remains intentionally paused for user review per stop-between-phases instruction.
 - 2026-02-21T18:43:27Z [CODE] Index-status Phase 2 is complete and validated: one-shot CLI output path is wired for human-readable and JSON diagnostics, while Phase 3 watch mode remains intentionally unimplemented.
 - 2026-02-21T18:55:59Z [CODE] Index-status Phase 3 is complete and validated with additive watch-mode behavior while preserving one-shot CLI behavior; remaining planned work is Phase 4 documentation/release-gate sweep.
+- 2026-02-21T20:09:28Z [CODE] Index-status Phase 4 is complete: documentation and contributor guidance now cover status CLI usage/flags and read-only status semantics, and required sync/test/verify release gates pass.
+- 2026-02-21T20:14:58Z [CODE] Runtime generation no longer recreates `.opencode` settings, so global OpenCode settings remain active by default across builds unless a user intentionally adds a worktree-local settings override.
+- 2026-02-21T20:16:33Z [CODE] The recurring post-build global-settings override issue is resolved for this workspace: repeated sync builds preserve global config selection without deleting `.opencode`.

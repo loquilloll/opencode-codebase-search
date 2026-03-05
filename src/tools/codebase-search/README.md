@@ -32,7 +32,8 @@ Set mode with:
 
 Configure tool settings in:
 
-- `.opencode/codebase-search.settings.jsonc` (runtime default)
+- `~/.config/opencode/codebase-search.settings.jsonc` (global default)
+- `.opencode/codebase-search.settings.jsonc` (worktree override, optional)
 
 Repository template settings file:
 
@@ -46,8 +47,11 @@ Config precedence is:
 
 - per-tool arg override
 - environment variables
-- `.opencode/codebase-search.settings.jsonc`
+- `.opencode/codebase-search.settings.jsonc` (if present)
+- `~/.config/opencode/codebase-search.settings.jsonc`
 - built-in defaults
+
+`npm run sync:opencode` does not create `.opencode/codebase-search.settings.jsonc`. Create it only when you intentionally need a worktree-local override.
 
 String fields in the JSONC file support command substitution:
 
@@ -130,6 +134,12 @@ Behavior:
 - If collection dimension differs from active model dimension, collection is recreated to match Roo behavior
 - Cache file is stored per workspace at `~/.local/share/opencode-codebase-search/ws-<sha256(worktree)[:16]>.cache.json`
 - Legacy workspace-local cache (`<worktree>/.opencode/codebase-search/ws-<sha256(worktree)[:16]>.cache.json`) is moved on first load when canonical cache is missing
+
+## Index Status Diagnostics
+
+- `src/tools/codebase-search/status.ts` implements `collectIndexStatus()` used by `scripts/codebase-index-status.ts`.
+- Status collection is read-only by design: it probes Qdrant/cache/worktree state and computes a dry-run reconciliation diff without embedding or upserting points.
+- Status diagnostics must not trigger indexing, collection writes, cache writes, or background scheduling side effects.
 
 ## Ignore Behavior
 

@@ -89,9 +89,6 @@ async function main() {
 
 	await writeFile(path.join(runtimeDir, "package.json"), JSON.stringify(runtimePackage, null, 2) + "\n", "utf8")
 
-	const settingsTemplate = await readFile(path.join(repoRoot, "codebase-search.settings.example.jsonc"), "utf8")
-	await writeFile(path.join(runtimeDir, "codebase-search.settings.jsonc"), settingsTemplate, "utf8")
-
 	console.log("Generated .opencode runtime from src/")
 }
 
