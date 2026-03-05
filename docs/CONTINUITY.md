@@ -71,6 +71,15 @@
 - 2026-02-19T16:11:22Z [USER] Requested implementing Phase 2 of the cache-relocation plan.
 - 2026-02-19T16:14:35Z [USER] Requested implementing Phase 3 of the cache-relocation plan.
 - 2026-02-19T16:54:55Z [USER] Requested implementing Phase 4 of the cache-relocation plan.
+- 2026-02-20T21:06:16Z [USER] Requested ensuring there is no PII in repository files and in local/remote git history, then approved rewriting history metadata when asked.
+- 2026-02-21T10:00:00Z [USER] Requested writing the index status CLI plan to a markdown file with commit-safe phases.
+- 2026-02-21T10:00:00Z [CODE] Added plan document `docs/plans/index-status-cli-plan.md` with 4 phases: status collector core+types, CLI one-shot, watch mode, docs+release gates.
+- 2026-02-21T10:15:00Z [USER] Requested plan revision: must be able to troubleshoot every mode, not just static health. Original issue is a full index taking too long.
+- 2026-02-21T10:15:00Z [CODE] Revised plan to include dry-run reconciliation diff (file scan + hash + cache comparison without embedding), per-mode assessments with severity, and reconciliation preview section showing changed/new/deleted files, estimated blocks, and estimated batches.
+- 2026-02-21T10:25:00Z [USER] Requested that testing strategy be explicitly reflected in the plan file.
+- 2026-02-21T10:25:00Z [CODE] Updated `docs/plans/index-status-cli-plan.md` with a dedicated `Testing Methodology` section covering automated tests, one-shot CLI smoke tests, live per-mode troubleshooting matrix, watch-mode verification, final release gates, and a concrete definition of test success.
+- 2026-02-21T18:26:47Z [USER] Requested implementing each phase using the `general` subagent and stopping for review between phases.
+- 2026-02-21T18:26:47Z [CODE] Started implementation execution and dispatched Phase 1 to `general` subagent only, deferring Phase 2+ pending user review.
 
 [DECISIONS]
 
@@ -109,6 +118,7 @@
 - 2026-02-17T12:47:02Z [USER] Installed artifacts for `codebase_search` and `semantic_search` must remain separated; installers must be independent.
 - 2026-02-19T12:53:46Z [USER] Approved symlink indexing scope that follows links resolving outside the worktree.
 - 2026-02-19T16:05:45Z [USER] Cache location is now fixed to `~/.local/share/opencode-codebase-search/ws-<sha256(worktree)[:16]>.cache.json` (single-file-per-workspace layout, no per-workspace folder).
+- 2026-02-20T21:06:16Z [USER] Approved rewriting local and remote commit metadata to remove personal author PII from git history.
 
 [PROGRESS]
 
@@ -221,6 +231,9 @@
 - 2026-02-19T16:11:22Z [CODE] Implemented cache-relocation Phase 2 in `src/tools/codebase-search/cache.ts`: `IndexCache` now accepts an optional legacy cache path and performs one-time move migration (`rename`, `EXDEV` fallback `copyFile + unlink`) plus best-effort legacy cleanup when canonical cache exists.
 - 2026-02-19T16:14:35Z [CODE] Implemented cache-relocation Phase 3 by wiring `src/tools/codebase-search/indexer.ts` to pass canonical+legacy paths into `IndexCache` and adding regression coverage in `src/tools/codebase-search/__tests__/cache.test.ts` for path shape, move migration, and canonical-preferred behavior.
 - 2026-02-19T16:54:55Z [CODE] Implemented cache-relocation Phase 4 docs/release-gates by updating cache-location guidance in `README.md` and `src/tools/codebase-search/README.md`, then running sync/test/verify gates.
+- 2026-02-20T21:06:16Z [CODE] Ran local+remote PII audit for tracked files and git history (`git grep` + `git log -G` checks), confirmed file-content patterns clear, identified author metadata as remaining PII, and performed approved full-history metadata rewrite with force-push.
+- 2026-02-21T10:25:00Z [CODE] Expanded `docs/plans/index-status-cli-plan.md` with explicit testing methodology for all indexing modes, including live verification focused on the original full-index-slowness issue.
+- 2026-02-21T18:26:47Z [CODE] Implemented index-status Phase 1 core: added status types, promoted `QdrantIndexStore.getCollectionInfo()` visibility, introduced read-only `collectIndexStatus()` with dry-run diff + mode assessments, and added focused `status.test.ts` coverage.
 
 [DISCOVERIES]
 
@@ -257,6 +270,8 @@
 - 2026-02-15T15:14:42Z [TOOL] In remote mode, `tmux-cli execute` can still return `exit_code=-1` before command completion; full run output was reliably recovered via `tmux capture-pane -pt <session:window>.0 -S -2000`.
 - 2026-02-15T15:14:42Z [TOOL] Attached runs without explicit `-m` can fall back to unavailable model `openai/gpt-5.2-codex-high`; explicit `-m openai/gpt-5.3-codex` produced successful rerun matrix outputs.
 - 2026-02-15T15:14:42Z [TOOL] tmux rerun results: `disabled -> search-only-existing-index`, `query -> already-fresh`, `background -> background-refresh-scheduled`, with code-first hits preserved for code-centric queries.
+- 2026-02-20T21:06:16Z [TOOL] Force push with generic `--force-with-lease` was rejected once as stale after rewrite; explicit lease pin to prior remote tip (`refs/heads/main:c49925189cf19725cd8e350e0fa4a731c0c89d18`) succeeded.
+- 2026-02-20T21:06:16Z [TOOL] Post-rewrite verification shows all reachable commits on local/`origin/main` now use sanitized metadata (`OpenCode User <user@localhost>`), and `git log -G`/`git grep` checks found no email/home-path PII patterns in tracked content.
 - 2026-02-15T15:27:42Z [TOOL] Migrated fixture symlink originally pointed to absolute Roo-Code path (`/home/<user>/Documents/pgit/Roo-Code/.opencode`) and needed rewiring for standalone portability.
 - 2026-02-15T15:27:42Z [TOOL] Global git excludes (`/home/<user>/.gitignore_global`) ignore `plans/` and `docs/`; standalone repo required root `.gitignore` negation rules to keep them trackable.
 - 2026-02-15T15:27:42Z [TOOL] Focused test suite passed in standalone repo: `npx --yes tsx --test ".opencode/tools/codebase-search/__tests__/*.test.ts"` (`pass=5`, `fail=0`).
@@ -297,6 +312,7 @@
 - 2026-02-19T16:11:22Z [TOOL] After cache-migration Phase 2 changes, `npm run test:focused` still passed (`tests=9`, `pass=9`, `fail=0`).
 - 2026-02-19T16:14:35Z [TOOL] After Phase 3 wiring/tests, `npm run test:focused` passed with expanded suite (`tests=12`, `pass=12`, `fail=0`).
 - 2026-02-19T16:54:55Z [TOOL] Phase 4 validation gates passed: `npm run sync:opencode` generated runtime, `npm run test:focused` passed (`tests=12`, `pass=12`, `fail=0`), and `npm run verify:release` passed.
+- 2026-02-21T18:26:47Z [TOOL] Phase 1 validation passed: `npm run test:focused` completed with `tests=17`, `pass=17`, `fail=0`; run emitted one non-fatal Qdrant compatibility warning during unreachable-probe coverage.
 
 [OUTCOMES]
 
@@ -355,3 +371,6 @@
 - 2026-02-19T16:11:22Z [CODE] Cache-relocation Phase 2 is complete at cache-layer level; Phase 3 wiring remains to pass legacy path from indexer and add regression tests for migration behavior.
 - 2026-02-19T16:14:35Z [CODE] Cache-relocation Phase 3 is complete: indexer now supplies legacy path for migration and focused regression tests lock path/migration semantics.
 - 2026-02-19T16:54:55Z [CODE] Cache-relocation Phase 4 is complete: docs now describe canonical/legacy cache paths and migration behavior, and release gates remain green.
+- 2026-02-20T21:06:16Z [CODE] Repository/file-content scan and local/remote git-history scan are now clean for the targeted PII patterns, and commit author metadata has been anonymized across rewritten history on `main`.
+- 2026-02-21T00:00:00Z [CODE] Expanded `docs/ARCHITECTURE.md` with 7 Mermaid diagrams: C4 System Context, Container View, Component/Module Boundaries, Query-Mode Sequence Flow, Indexing Pipeline Activity, Index Mode State Lifecycle, and Configuration Resolution Flow, plus Source/Runtime Layout diagram.
+- 2026-02-21T18:26:47Z [CODE] Index-status implementation is now in phased execution: Phase 1 is complete and validated; Phase 2+ remains intentionally paused for user review per stop-between-phases instruction.

@@ -117,3 +117,70 @@ export interface IndexConfig {
 	openRouterSpecificProvider?: string
 	cacheFilePath: string
 }
+
+export interface StatusOptions {
+	timeoutMs?: number
+	skipDiff?: boolean
+}
+
+export interface QdrantStatus {
+	reachable: boolean
+	url: string
+	collectionName: string
+	collectionExists: boolean
+	pointsCount: number
+	indexingComplete: boolean | null
+	lastCompletedAt: number | null
+	error?: string
+}
+
+export interface CacheStatus {
+	filePath: string
+	exists: boolean
+	entryCount: number
+	legacyFilePath: string
+	legacyExists: boolean
+}
+
+export interface WorktreeStatus {
+	worktree: string
+	indexableFileCount: number
+	scanDurationMs: number
+}
+
+export interface DiffStatus {
+	changedFiles: number
+	newFiles: number
+	deletedFiles: number
+	skippedFiles: number
+	estimatedBlocks: number
+	estimatedBatches: number
+	diffDurationMs: number
+}
+
+export interface ModeAssessment {
+	mode: string
+	explanation: string
+	severity: "ok" | "warning" | "problem"
+}
+
+export interface ConfigStatus {
+	settingsFilePath: string
+	provider: string
+	modelId: string
+	modelDimension: number | undefined
+	indexMode: string
+	qdrantUrl: string
+	followSymlinks: boolean
+	followExternalSymlinks: boolean
+}
+
+export interface IndexStatus {
+	timestamp: string
+	config: ConfigStatus
+	qdrant: QdrantStatus
+	cache: CacheStatus
+	worktree: WorktreeStatus
+	diff: DiffStatus | null
+	assessments: ModeAssessment[]
+}

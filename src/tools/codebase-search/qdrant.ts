@@ -74,7 +74,7 @@ export class QdrantIndexStore {
 		return trimmed
 	}
 
-	private async getCollectionInfo(): Promise<any | null> {
+	async getCollectionInfo(): Promise<any | null> {
 		try {
 			return await this.client.getCollection(this.collectionName)
 		} catch {
