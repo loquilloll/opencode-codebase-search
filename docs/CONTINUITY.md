@@ -86,6 +86,8 @@
 - 2026-02-21T18:55:59Z [CODE] Started Phase 3 implementation in `scripts/codebase-index-status.ts` with additive watch-mode scope and no Phase 4 docs sweep beyond continuity entries.
 - 2026-02-21T20:09:28Z [USER] Requested implementing index-status Phase 4 only (docs + release gates): update `README.md`, `src/tools/codebase-search/README.md`, `AGENTS.md`, and `docs/CONTINUITY.md`, then run `sync:opencode`, `test:focused`, and `verify:release`.
 - 2026-02-21T20:14:58Z [USER] Reported that local `.opencode` keeps interfering with global OpenCode settings after builds and requested removing this friction.
+- 2026-02-21T20:27:33Z [USER] Requested continuing execution from `docs/plans/index-status-cli-plan.md`.
+- 2026-02-21T20:20:30Z [USER] Requested the next hardening phase: add release/runtime guard against `.opencode/codebase-search.settings.jsonc`, add config precedence regression tests for env/worktree/global settings path selection, and append continuity deltas.
 
 [DECISIONS]
 
@@ -247,6 +249,9 @@
 - 2026-02-21T20:09:28Z [CODE] Implemented index-status Phase 4 docs/release-gates scope: added README index-status usage/flags/mode-value docs, added developer read-only status diagnostics note in `src/tools/codebase-search/README.md`, updated `AGENTS.md` repository map + command list for status tooling, and ran required validation gates.
 - 2026-02-21T20:14:58Z [CODE] Updated `scripts/sync-opencode.mjs` to stop writing `.opencode/codebase-search.settings.jsonc` during runtime generation and updated settings docs in `README.md` and `src/tools/codebase-search/README.md` to reflect global-default behavior with optional worktree override.
 - 2026-02-21T20:16:33Z [CODE] Re-ran `sync:opencode`/`test:focused`/`verify:release` and validated status CLI now resolves settings from `~/.config/opencode/codebase-search.settings.jsonc` with no runtime-local settings file generated.
+- 2026-02-21T20:27:33Z [CODE] Continued the index-status plan document by adding a post-plan Phase 5 hardening section (sync/runtime settings guard + precedence regression tests), updating file inventory, and recording regression mitigation risk.
+- 2026-02-21T20:20:30Z [CODE] Added release hardening in `scripts/verify-release.mjs` to fail when `.opencode/codebase-search.settings.jsonc` exists, preserving all existing runtime boundary checks.
+- 2026-02-21T20:20:30Z [CODE] Added focused regression coverage at `src/tools/codebase-search/__tests__/config.test.ts` for `getSettingsPath()` precedence: env override > worktree `.opencode` > global `~/.config/opencode` when worktree file is absent.
 
 [DISCOVERIES]
 
@@ -334,6 +339,8 @@
 - 2026-02-21T20:09:28Z [TOOL] Phase 4 release-gate validation succeeded: `npm run sync:opencode` generated runtime, `npm run test:focused` passed (`tests=17`, `pass=17`, `fail=0`), and `npm run verify:release` passed; focused tests still emit the known non-fatal Qdrant version-check warning during unreachable-probe coverage.
 - 2026-02-21T20:14:58Z [TOOL] `scripts/sync-opencode.mjs` previously copied `codebase-search.settings.example.jsonc` into `.opencode/codebase-search.settings.jsonc`, which made worktree-local settings exist after every sync and take precedence over global config.
 - 2026-02-21T20:16:33Z [TOOL] Post-change check `npx --yes tsx scripts/codebase-index-status.ts --worktree . --compact` reports `config.settingsFilePath=/home/alvins/.config/opencode/codebase-search.settings.jsonc`, and `.opencode/` now contains only `package.json`, `plugins/`, and `tools/`.
+- 2026-02-21T20:27:33Z [TOOL] `docs/plans/index-status-cli-plan.md` now includes explicit Phase 5 hardening items and inventory rows for `scripts/sync-opencode.mjs`, `scripts/verify-release.mjs`, and `src/tools/codebase-search/__tests__/config.test.ts`.
+- 2026-02-21T20:20:30Z [TOOL] Hardening-phase gates passed after new guard/tests: `npm run sync:opencode` succeeded, `npm run test:focused` passed (`tests=20`, `pass=20`, `fail=0`), and `npm run verify:release` passed with runtime settings-file absence enforced.
 
 [OUTCOMES]
 
@@ -400,3 +407,5 @@
 - 2026-02-21T20:09:28Z [CODE] Index-status Phase 4 is complete: documentation and contributor guidance now cover status CLI usage/flags and read-only status semantics, and required sync/test/verify release gates pass.
 - 2026-02-21T20:14:58Z [CODE] Runtime generation no longer recreates `.opencode` settings, so global OpenCode settings remain active by default across builds unless a user intentionally adds a worktree-local settings override.
 - 2026-02-21T20:16:33Z [CODE] The recurring post-build global-settings override issue is resolved for this workspace: repeated sync builds preserve global config selection without deleting `.opencode`.
+- 2026-02-21T20:27:33Z [CODE] The plan artifact now reflects delivered scope beyond original Phase 4, including hardening/regression guard work needed to keep settings precedence stable.
+- 2026-02-21T20:20:30Z [CODE] Global-settings protection now has regression guards at both release-boundary and config-resolution layers, reducing risk of silent reintroduction of worktree runtime overrides.

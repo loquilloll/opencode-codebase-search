@@ -20,6 +20,20 @@ async function assertFile(targetPath, label) {
 	}
 }
 
+async function assertPathMissing(targetPath, label) {
+	try {
+		await lstat(targetPath)
+	} catch (error) {
+		if (error && typeof error === "object" && "code" in error && error.code === "ENOENT") {
+			return
+		}
+
+		throw error
+	}
+
+	throw new Error(`${label} must not exist: ${targetPath}`)
+}
+
 async function walkPaths(rootDir) {
 	const results = []
 	const entries = await readdir(rootDir, { withFileTypes: true })
@@ -45,6 +59,10 @@ async function main() {
 	await assertFile(path.join(runtimeDir, "package.json"), "Runtime package")
 	await assertFile(path.join(runtimeDir, "tools", "codebase_search.ts"), "Tool entrypoint")
 	await assertFile(path.join(runtimeDir, "plugins", "codebase-index-worker.ts"), "Plugin entrypoint")
+	await assertPathMissing(
+		path.join(runtimeDir, "codebase-search.settings.jsonc"),
+		"Runtime settings override file",
+	)
 
 	const runtimePaths = await walkPaths(runtimeDir)
 	const forbiddenSegments = ["__tests__", "plans", "test-fixtures", "test-evidence"]

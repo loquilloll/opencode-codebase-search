@@ -324,6 +324,32 @@ Wire documentation, verify npm script, confirm release gates.
 - `npm run test:focused`
 - `npm run verify:release`
 
+---
+
+### Phase 5 — Hardening + Regression Guards (post-plan extension)
+
+**Goal**
+Prevent regression of settings precedence and keep global OpenCode settings stable across repeated runtime sync/build cycles.
+
+**Changes**
+
+- Update `scripts/sync-opencode.mjs` to stop generating `.opencode/codebase-search.settings.jsonc`, so `sync:opencode` does not recreate a worktree-local override file.
+- Update `scripts/verify-release.mjs` to fail if `.opencode/codebase-search.settings.jsonc` exists.
+- Add focused regression tests in `src/tools/codebase-search/__tests__/config.test.ts` for settings path precedence:
+  - `CODEBASE_SEARCH_SETTINGS_FILE` override wins
+  - worktree `.opencode/codebase-search.settings.jsonc` wins when present
+  - global `~/.config/opencode/codebase-search.settings.jsonc` is used when worktree-local file is absent
+
+**Commit safety**
+- Modified: `scripts/sync-opencode.mjs`, `scripts/verify-release.mjs`.
+- New file: `src/tools/codebase-search/__tests__/config.test.ts`.
+- No indexing/search logic behavior changes.
+
+**Validation gate**
+- `npm run sync:opencode`
+- `npm run test:focused`
+- `npm run verify:release`
+
 ## Testing Methodology
 
 ### 1) Automated tests (fast feedback)
@@ -393,6 +419,7 @@ Run against the problematic workspace (for example `/home/<user>/Documents/pgit/
 | `src/tools/codebase-search/status.ts` | 1 |
 | `src/tools/codebase-search/__tests__/status.test.ts` | 1 |
 | `scripts/codebase-index-status.ts` | 2 |
+| `src/tools/codebase-search/__tests__/config.test.ts` | 5 |
 
 ### Modified files
 | File | Phase |
@@ -404,6 +431,8 @@ Run against the problematic workspace (for example `/home/<user>/Documents/pgit/
 | `src/tools/codebase-search/README.md` | 4 |
 | `AGENTS.md` | 4 |
 | `docs/CONTINUITY.md` | 4 |
+| `scripts/sync-opencode.mjs` | 5 |
+| `scripts/verify-release.mjs` | 5 |
 
 ## Risks
 
@@ -412,3 +441,4 @@ Run against the problematic workspace (for example `/home/<user>/Documents/pgit/
 - **Dry-run block estimation**: Running `parseTextIntoBlocks()` on changed files adds tree-sitter parsing overhead. For status-only use this is acceptable since it's a one-shot cost. Watch mode skips this by default.
 - **`getCollectionInfo()` visibility change**: Minimal risk — method already exists, no logic change, just `private` → public. Existing callers are internal to the class and unaffected.
 - **Background queue state**: The in-process `background-index-queue.ts` state (`running`/`pending`) is not accessible from CLI (different process). The CLI compensates by inferring background health from Qdrant `completed_at` timestamps and the dry-run diff size. This is explicitly documented as a known limitation.
+- **Settings precedence regression**: If `.opencode/codebase-search.settings.jsonc` is regenerated, worktree-local settings can unintentionally override global config. Mitigations: `sync-opencode` no longer generates runtime settings, `verify-release` fails if runtime settings file appears, and focused config precedence tests lock resolution behavior.
