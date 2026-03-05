@@ -7,6 +7,7 @@ import {
 	QDRANT_CODE_BLOCK_NAMESPACE,
 } from "./constants"
 import { IndexCache } from "./cache"
+import { getLegacyCacheFilePath } from "./config"
 import { createFileHash, parseTextIntoBlocks } from "./parser"
 import { scanSupportedFiles } from "./scanner"
 import { toRelativeWorkspacePath } from "./utils/paths"
@@ -133,7 +134,7 @@ async function collectAllFilesForReindex(
 }
 
 export async function ensureIndexFresh(config: IndexConfig, embedder: Embedder): Promise<IndexingSummary> {
-	const cache = new IndexCache(config.cacheFilePath)
+	const cache = new IndexCache(config.cacheFilePath, getLegacyCacheFilePath(config.worktree))
 	await cache.load()
 
 	const vectorSize = config.modelDimension
