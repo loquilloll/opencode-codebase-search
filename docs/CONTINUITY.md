@@ -82,6 +82,8 @@
 - 2026-02-21T18:26:47Z [CODE] Started implementation execution and dispatched Phase 1 to `general` subagent only, deferring Phase 2+ pending user review.
 - 2026-02-21T18:43:27Z [USER] Requested implementing index-status Phase 2 only (CLI one-shot mode), including required flags, package script wiring, focused tests, smoke checks, and continuity update.
 - 2026-02-21T18:43:27Z [CODE] Implemented Phase 2 scope only (no watch mode changes) with new CLI entrypoint and additive `package.json` script update.
+- 2026-02-21T18:55:59Z [USER] Requested implementing index-status Phase 3 only (watch mode) with interval controls, watch deltas, NDJSON behavior for JSON/compact, clean signal stop summary, focused validation, and continuity updates.
+- 2026-02-21T18:55:59Z [CODE] Started Phase 3 implementation in `scripts/codebase-index-status.ts` with additive watch-mode scope and no Phase 4 docs sweep beyond continuity entries.
 
 [DECISIONS]
 
@@ -238,6 +240,7 @@
 - 2026-02-21T18:26:47Z [CODE] Implemented index-status Phase 1 core: added status types, promoted `QdrantIndexStore.getCollectionInfo()` visibility, introduced read-only `collectIndexStatus()` with dry-run diff + mode assessments, and added focused `status.test.ts` coverage.
 - 2026-02-21T18:43:27Z [CODE] Implemented Phase 2 CLI one-shot diagnostics in `scripts/codebase-index-status.ts` with argv parsing (`--worktree`, `--timeout-ms`, `--skip-diff`, `--json`, `--compact`, `--help`), worktree-directory validation, `collectIndexStatus()` wiring, human/JSON renderers, and clean SIGINT handling.
 - 2026-02-21T18:43:27Z [CODE] Added `package.json` script `index:status` -> `tsx scripts/codebase-index-status.ts`.
+- 2026-02-21T18:55:59Z [CODE] Implemented index-status Phase 3 watch mode in `scripts/codebase-index-status.ts`: added `--watch`, `--interval-ms`, `--no-skip-diff`, watch-loop polling with default `skipDiff=true` (watch-only), per-iteration deltas, human clear-screen rendering, NDJSON watch output for JSON/compact, and SIGINT/SIGTERM graceful stop with human final summary.
 
 [DISCOVERIES]
 
@@ -319,6 +322,9 @@
 - 2026-02-21T18:26:47Z [TOOL] Phase 1 validation passed: `npm run test:focused` completed with `tests=17`, `pass=17`, `fail=0`; run emitted one non-fatal Qdrant compatibility warning during unreachable-probe coverage.
 - 2026-02-21T18:43:27Z [TOOL] Phase 2 validation passed: `npm run test:focused` completed with `tests=17`, `pass=17`, `fail=0`.
 - 2026-02-21T18:43:27Z [TOOL] Phase 2 one-shot smoke checks all succeeded: `npx --yes tsx scripts/codebase-index-status.ts --worktree .`, `--json`, `--compact`, and `--skip-diff`; in this environment Qdrant probe reported `reachable=false` with `fetch failed`, and CLI still produced structured diagnostics/output in all modes.
+- 2026-02-21T18:55:59Z [TOOL] Phase 3 validation passed: `npm run test:focused` completed with `tests=17`, `pass=17`, `fail=0`.
+- 2026-02-21T18:55:59Z [TOOL] One-shot sanity after watch changes succeeded: `npx --yes tsx scripts/codebase-index-status.ts --worktree . --compact` returned expected compact JSON status payload.
+- 2026-02-21T18:55:59Z [TOOL] Watch-mode smoke checks succeeded with timeout-driven interrupts: human watch (`timeout -s INT 7 ... --watch --interval-ms 1000`) printed iterative clear-screen tables and clean stop summary with total elapsed/aggregate deltas; compact watch (`timeout -s INT 7 ... --watch --interval-ms 1000 --compact`) emitted multi-line NDJSON with `iteration` + `deltas`; `--no-skip-diff` override (`timeout -s INT 4 ... --watch --compact --no-skip-diff`) returned watch entries with non-null `status.diff`.
 
 [OUTCOMES]
 
@@ -381,3 +387,4 @@
 - 2026-02-21T00:00:00Z [CODE] Expanded `docs/ARCHITECTURE.md` with 7 Mermaid diagrams: C4 System Context, Container View, Component/Module Boundaries, Query-Mode Sequence Flow, Indexing Pipeline Activity, Index Mode State Lifecycle, and Configuration Resolution Flow, plus Source/Runtime Layout diagram.
 - 2026-02-21T18:26:47Z [CODE] Index-status implementation is now in phased execution: Phase 1 is complete and validated; Phase 2+ remains intentionally paused for user review per stop-between-phases instruction.
 - 2026-02-21T18:43:27Z [CODE] Index-status Phase 2 is complete and validated: one-shot CLI output path is wired for human-readable and JSON diagnostics, while Phase 3 watch mode remains intentionally unimplemented.
+- 2026-02-21T18:55:59Z [CODE] Index-status Phase 3 is complete and validated with additive watch-mode behavior while preserving one-shot CLI behavior; remaining planned work is Phase 4 documentation/release-gate sweep.
