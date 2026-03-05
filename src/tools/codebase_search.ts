@@ -1,3 +1,4 @@
+import path from "path"
 import { tool } from "@opencode-ai/plugin"
 
 import { runCodebaseSearch } from "./codebase-search/engine"
@@ -16,6 +17,40 @@ const QUERY_PARAMETER_DESCRIPTION = "Meaning-based search query describing the i
 
 const PATH_PARAMETER_DESCRIPTION = "Optional subdirectory (relative to the workspace) to limit the search scope"
 
+function normalizeWorkspaceCandidate(candidate: string | null | undefined): string | undefined {
+	if (!candidate || candidate.trim() === "") {
+		return undefined
+	}
+
+	return path.resolve(candidate)
+}
+
+function isFilesystemRoot(candidate: string): boolean {
+	const resolved = path.resolve(candidate)
+	return resolved === path.parse(resolved).root
+}
+
+function resolveWorkspaceRoot(context: { worktree?: string | null; directory?: string | null }): string {
+	const worktree = normalizeWorkspaceCandidate(context.worktree)
+	const directory = normalizeWorkspaceCandidate(context.directory)
+
+	if (worktree && !isFilesystemRoot(worktree)) {
+		return worktree
+	}
+
+	if (directory && !isFilesystemRoot(directory)) {
+		return directory
+	}
+
+	if (worktree && directory && isFilesystemRoot(worktree) && isFilesystemRoot(directory)) {
+		throw new Error(
+			`Could not determine project workspace root: both worktree ('${worktree}') and directory ('${directory}') resolved to filesystem roots.`,
+		)
+	}
+
+	throw new Error("Could not determine project workspace root from OpenCode context.")
+}
+
 export default tool({
 	description: CODEBASE_SEARCH_DESCRIPTION,
 	args: {
@@ -32,10 +67,7 @@ export default tool({
 			throw new Error("Missing required 'query' parameter.")
 		}
 
-		const worktree = context.worktree || context.directory
-		if (!worktree) {
-			throw new Error("Could not determine worktree path from OpenCode context.")
-		}
+		const worktree = resolveWorkspaceRoot(context)
 
 		const response = await runCodebaseSearch(
 			{

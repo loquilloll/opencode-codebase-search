@@ -255,6 +255,8 @@
 - 2026-02-21T20:31:42Z [CODE] Executed live testing methodology commands from `docs/plans/index-status-cli-plan.md` against `/home/<user>/Documents/pgit/mcp-obsidian` and captured results in `docs/plans/artifacts/test-evidence/index-status-live-mcp-obsidian.md`.
 - 2026-02-21T20:42:38Z [CODE] Ran a concurrent watch+query live pass on `/home/<user>/Documents/pgit/mcp-obsidian` (watch NDJSON while `codebase_search` ran in `query` mode) and appended non-zero delta evidence plus post-run caught-up snapshot to `docs/plans/artifacts/test-evidence/index-status-live-mcp-obsidian.md` and the plan file.
 - 2026-02-21T20:53:05Z [CODE] Added a concurrent background-mode live evidence pass (three `mode=background` runs while NDJSON watch was active), then appended observed transitions and post-run snapshot to `docs/plans/artifacts/test-evidence/index-status-live-mcp-obsidian.md` and `docs/plans/index-status-cli-plan.md`.
+- 2026-02-25T13:57:42Z [CODE] Troubleshooting run removed accidental parent-worktree index artifacts for `/home/<user>/Documents/pgit` by deleting Qdrant collection `ws-e07a9e5b94bcb839` and removing cache file `~/.local/share/opencode-codebase-search/ws-e07a9e5b94bcb839.cache.json`.
+- 2026-02-25T13:57:42Z [CODE] Added local guard in `~/.config/opencode/codebase-search.settings.jsonc` `excludePaths` using command substitution to emit `*` only when `PWD=/home/<user>/Documents/pgit`, preventing accidental parent-directory indexing while preserving normal repo indexing.
 
 [DISCOVERIES]
 
@@ -350,6 +352,11 @@
 - 2026-02-21T20:42:38Z [TOOL] Post-run one-shot status on `/home/<user>/Documents/pgit/mcp-obsidian` showed `diff.changed=0`, `estimatedBatches=0`, and all mode assessments `ok`.
 - 2026-02-21T20:53:05Z [TOOL] Concurrent background runs each returned `mode=background` with `triggered=true` and `reason=background-refresh-scheduled`; watch NDJSON captured async completion transition (`indexingComplete true -> false -> true`) and point growth (`487 -> 508`).
 - 2026-02-21T20:53:05Z [TOOL] Post-background one-shot status on `/home/<user>/Documents/pgit/mcp-obsidian` reported `diff.changed=0`, `estimatedBatches=0`, and `disabled/query/background` assessments all `ok`.
+- 2026-02-25T13:57:42Z [TOOL] OpenCode core sets custom tool context as `directory=input.directory` and `worktree=Project.fromDirectory(...).sandbox/worktree`; `directory` comes from request (`query.directory` -> `x-opencode-directory` header -> `process.cwd()`), while `worktree` is git-derived and can resolve to a parent path if nested `.git`/git-common-dir logic points upward.
+- 2026-02-25T13:57:42Z [TOOL] In this local install (`~/.config/opencode/tools/codebase-search`), `excludePaths` supports command substitution entries and is applied by scanner ignore matching; this enables worktree-specific blocking without changing repository source.
+- 2026-02-25T13:57:42Z [TOOL] Post-cleanup validation from `/home/<user>/Documents/pgit` returned `mode=disabled`, `reason=no-existing-index`, `results=[]`, and direct Qdrant collection probe returned HTTP `404` for `ws-e07a9e5b94bcb839`.
+- 2026-02-25T14:14:13Z [CODE] Added explicit workspace-root guard in `src/tools/codebase_search.ts` (and active local install mirror at `~/.config/opencode/tools/codebase_search.ts`): if `context.worktree` resolves to filesystem root, tool now falls back to non-root `context.directory`; if both resolve to filesystem roots, it throws instead of indexing `/`.
+- 2026-02-25T14:14:13Z [TOOL] Verification gates after workspace-root guard passed: `npm run sync:opencode`, `npm run test:focused` (`tests=20`, `pass=20`, `fail=0`), and `npm run verify:release` all succeeded.
 
 [OUTCOMES]
 
@@ -421,3 +428,5 @@
 - 2026-02-21T20:31:42Z [CODE] Plan testing methodology now has concrete live-workspace evidence for one-shot and watch diagnostics, including diff-override and signal-stop behavior.
 - 2026-02-21T20:42:38Z [CODE] Testing methodology now also includes concurrent query+watch proof with non-zero live deltas and completion-state transitions, demonstrating watch usefulness during active indexing.
 - 2026-02-21T20:53:05Z [CODE] Testing methodology now includes matching concurrent background+watch evidence, validating asynchronous background scheduling visibility and caught-up confirmation after completion.
+- 2026-02-25T13:57:42Z [CODE] Parent-folder indexing noise is now mitigated locally: the stale `/home/<user>/Documents/pgit` index has been removed and a local worktree-specific block guard prevents reindexing that parent bucket during normal use.
+- 2026-02-25T14:14:13Z [CODE] Tool-level workspace resolution now enforces a safety invariant: `codebase_search` never uses filesystem root as effective index root, reducing accidental mega-scope indexing when OpenCode returns global fallback worktrees.
