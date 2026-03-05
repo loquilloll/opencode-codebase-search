@@ -46,6 +46,26 @@
 - 2026-02-16T00:35:55Z [USER] Requested adding an `AGENTS.md` rule to keep PII out of the repository.
 - 2026-02-15T18:55:01Z [USER] Requested writing the reorganization + OpenCode config prompting plan into a repository file.
 - 2026-02-15T18:55:01Z [CODE] Prepared and saved a concrete phased plan at `docs/plans/repo-reorg-and-opencode-config-plan.md`.
+- 2026-02-17T11:44:23Z [USER] Requested writing the standalone systemd indexing service + OpenCode custom tool plan to a markdown file.
+- 2026-02-17T11:44:23Z [CODE] Added plan document `docs/plans/standalone-systemd-indexing-service-plan.md` with phased implementation, validation checklist, and risks.
+- 2026-02-17T11:54:12Z [USER] Requested writing the proposed folder hierarchy organization into the standalone systemd indexing service plan.
+- 2026-02-17T11:54:12Z [CODE] Updated `docs/plans/standalone-systemd-indexing-service-plan.md` with repository hierarchy, adapter boundaries, and source/runtime rules.
+- 2026-02-17T12:04:36Z [USER] Required hard separation between base OpenCode tool and systemd service stack, with dedicated systemd installation instructions and distinct naming for the service-scoped OpenCode tool.
+- 2026-02-17T12:04:36Z [CODE] Revised `docs/plans/standalone-systemd-indexing-service-plan.md` to define two separate products, dedicated systemd runbook requirements, and a naming strategy.
+- 2026-02-17T12:17:13Z [USER] Requested renaming the service-scoped tool to `semantic_search` and clarified that the systemd service/tool should focus on documents rather than code.
+- 2026-02-17T12:17:13Z [CODE] Updated `docs/plans/standalone-systemd-indexing-service-plan.md` to make `semantic_search` the service tool and enforce document-first service scope.
+- 2026-02-17T12:30:59Z [USER] Requested adding explicit plan coverage for real-time directory watching and timer fallback indexing in the `semantic_search` systemd stack.
+- 2026-02-17T12:30:59Z [CODE] Updated `docs/plans/standalone-systemd-indexing-service-plan.md` with watcher-triggered indexing and timer fallback reliability requirements.
+- 2026-02-17T12:40:31Z [USER] Specified fixed semantic service config locations: `~/.config/semantic_search/semantic-search.settings.json` and `~/.config/semantic_search/semantic-search.env`.
+- 2026-02-17T12:40:31Z [CODE] Updated `docs/plans/standalone-systemd-indexing-service-plan.md` to use the fixed semantic service config paths and matching template names.
+- 2026-02-17T12:47:02Z [USER] Requested explicit installed-file location strategy for `semantic_search` and confirmed `codebase_search`/`semantic_search` must have separate installers with no installed-component sharing.
+- 2026-02-17T12:47:02Z [CODE] Updated `docs/plans/standalone-systemd-indexing-service-plan.md` with installed layout mapping, non-overlap rules, and named separate installer scripts.
+- 2026-02-19T12:53:46Z [USER] Requested writing the symlink-following indexer plan to markdown and breaking it into commit-safe phases.
+- 2026-02-19T13:02:15Z [USER] Requested starting Phase 1 from the symlink-following indexer plan.
+- 2026-02-19T13:10:58Z [USER] Requested advancing to the next implementation phase (Phase 2) for symlink-aware scanning.
+- 2026-02-19T13:30:16Z [USER] Requested moving on to Phase 3 (indexer integration) for symlink support.
+- 2026-02-19T13:41:06Z [USER] Requested moving on to Phase 4 (symlink regression test matrix).
+- 2026-02-19T14:39:28Z [USER] Requested moving on to Phase 5 (documentation and release gates).
 
 [DECISIONS]
 
@@ -75,6 +95,14 @@
 - 2026-02-15T21:28:20Z [USER] Empty-string Qdrant API key should be treated as unset to avoid false insecure-key warnings.
 - 2026-02-15T21:36:05Z [USER] Roo and OpenCode are often used concurrently; docs/instructions should explicitly describe index trigger behavior in that workflow.
 - 2026-02-16T00:35:55Z [USER] Repository should include a committed instruction template and explicit PII-scrubbing policy in agent guidance.
+- 2026-02-17T12:04:36Z [USER] `codebase_search` remains local-worktree scoped; systemd stack must expose a separate OpenCode tool for configured-directory scope only.
+- 2026-02-17T12:04:36Z [USER] systemd service/install docs must be separate from base OpenCode tool installation docs.
+- 2026-02-17T12:17:13Z [USER] Service-scoped tool name is `semantic_search`.
+- 2026-02-17T12:17:13Z [USER] systemd service stack is document-focused (configured document directories), while `codebase_search` remains the base local tool.
+- 2026-02-17T12:30:59Z [USER] systemd service plan must include real-time folder watch updates plus a timer fallback for index freshness.
+- 2026-02-17T12:40:31Z [USER] `semantic_search` service config defaults are fixed at `~/.config/semantic_search/semantic-search.settings.json` and `~/.config/semantic_search/semantic-search.env`.
+- 2026-02-17T12:47:02Z [USER] Installed artifacts for `codebase_search` and `semantic_search` must remain separated; installers must be independent.
+- 2026-02-19T12:53:46Z [USER] Approved symlink indexing scope that follows links resolving outside the worktree.
 
 [PROGRESS]
 
@@ -169,6 +197,19 @@
 - 2026-02-16T00:35:55Z [CODE] Added repository instruction file `instructions/codebase-search.md` mirroring active global tool guidance for portable setup.
 - 2026-02-16T00:35:55Z [CODE] Updated `README.md` global-install steps to copy `instructions/codebase-search.md` into `~/.config/opencode/instructions/` and ensure it is referenced in `opencode.jsonc`.
 - 2026-02-16T00:35:55Z [CODE] Added `AGENTS.md` privacy section requiring PII scrubbing and placeholder paths (`/home/<user>/...`).
+- 2026-02-17T11:44:23Z [CODE] Added `docs/plans/standalone-systemd-indexing-service-plan.md` covering daemon endpoints, systemd user service templates, tool integration path, config changes, and validation phases.
+- 2026-02-17T11:54:12Z [CODE] Expanded `docs/plans/standalone-systemd-indexing-service-plan.md` with a concrete `src/tools` + `src/plugins` + `src/service` + `systemd/` hierarchy and ownership boundaries.
+- 2026-02-17T12:04:36Z [CODE] Reworked `docs/plans/standalone-systemd-indexing-service-plan.md` to remove backend-mixing assumptions, add product boundary rules, and add required runbooks (`docs/runbooks/systemd-service-install.md`, `docs/runbooks/systemd-opencode-tool.md`).
+- 2026-02-17T12:17:13Z [CODE] Revised naming and scope in `docs/plans/standalone-systemd-indexing-service-plan.md`: `indexed_codebase_search` -> `semantic_search`, service unit/docs names updated to semantic-search variants, and service sections now describe document-directory indexing/search.
+- 2026-02-17T12:30:59Z [CODE] Added watcher and fallback specifics to the plan: inotify/chokidar-style directory watch triggers, timer-based fallback trigger path, and related validation checklist entries.
+- 2026-02-17T12:40:31Z [CODE] Updated plan config model to fixed semantic service paths, added template names (`systemd/semantic-search.settings.example.json`, `systemd/semantic-search.env.example`), and added validation/install requirements for those files.
+- 2026-02-17T12:47:02Z [CODE] Added installed-layout section to plan with explicit target paths (`~/.config/opencode/*` vs `~/.config/semantic_search/*` + `~/.local/share/semantic_search/*`), installer split (`scripts/install-codebase-search-global.mjs`, `scripts/install-semantic-search-systemd.mjs`), and non-clobber validation criteria.
+- 2026-02-19T12:53:46Z [CODE] Added `docs/plans/symlink-following-indexer-plan.md` with commit-safe phases for config, scanner, integration, tests, and docs/release gates.
+- 2026-02-19T13:02:15Z [CODE] Implemented Phase 1 config contract in `src/tools/codebase-search/types.ts`, `src/tools/codebase-search/config.ts`, `src/tools/codebase-search/constants.ts`, and `codebase-search.settings.example.jsonc` with new symlink traversal settings/env parsing and defaults.
+- 2026-02-19T13:10:58Z [CODE] Implemented Phase 2 scanner core by adding `src/tools/codebase-search/scanner.ts` (symlink-aware traversal with cycle protection and external-target gating), refactoring `src/tools/codebase-search/indexer.ts` to use scanner output, and adding focused coverage in `src/tools/codebase-search/__tests__/scanner.test.ts`.
+- 2026-02-19T13:30:16Z [CODE] Implemented Phase 3 integration by updating `src/tools/codebase-search/indexer.ts` to consume scanner logical/read paths, reading and hashing via resolved paths while keeping cache keys and payload paths logical, and extending `src/tools/codebase-search/parser.ts` with parse-path hints for extension-aware parsing on resolved targets.
+- 2026-02-19T13:41:06Z [CODE] Implemented Phase 4 regression coverage by adding `.ignore` logical-alias symlink test to `src/tools/codebase-search/__tests__/scanner.test.ts`, completing the planned symlink traversal matrix.
+- 2026-02-19T14:39:28Z [CODE] Implemented Phase 5 docs updates in `src/tools/codebase-search/README.md` and `README.md`, documenting symlink settings/env toggles and traversal behavior, then ran full release gates.
 
 [DISCOVERIES]
 
@@ -236,6 +277,11 @@
 - 2026-02-16T00:18:44Z [TOOL] `git filter-branch` first attempt used `read -d` and failed under `/bin/sh` (`Illegal option -d`); rerun with a POSIX-compatible loop succeeded.
 - 2026-02-16T00:18:44Z [TOOL] Initial history grep still returned user-name matches until `refs/original/*` and reflogs were pruned; after `git gc --prune=now`, no matches remained in reachable history.
 - 2026-02-16T00:18:44Z [TOOL] `git push --force-with-lease origin main` was rejected once due stale lease; push with explicit lease hash succeeded.
+- 2026-02-19T13:02:15Z [TOOL] `npm run test:focused` passed after Phase 1 config changes (`tests=5`, `pass=5`, `fail=0`).
+- 2026-02-19T13:10:58Z [TOOL] Phase 2 validation passed: `npm run sync:opencode` completed, `npm run test:focused` passed with scanner tests added (`tests=8`, `pass=8`, `fail=0`), and `npm run verify:release` passed.
+- 2026-02-19T13:30:16Z [TOOL] Phase 3 validation passed after integration changes: `npm run sync:opencode`, `npm run test:focused` (`tests=8`, `pass=8`, `fail=0`), and `npm run verify:release` all succeeded.
+- 2026-02-19T13:41:06Z [TOOL] Phase 4 validation passed: `npm run test:focused` completed with symlink regression suite (`tests=9`, `pass=9`, `fail=0`).
+- 2026-02-19T14:39:28Z [TOOL] Phase 5 validation passed: `npm run sync:opencode`, `npm run test:focused` (`tests=9`, `pass=9`, `fail=0`), and `npm run verify:release` all succeeded after docs updates.
 
 [OUTCOMES]
 
@@ -276,3 +322,16 @@
 - 2026-02-15T21:39:59Z [CODE] README is now concise and task-focused without removing operational setup details.
 - 2026-02-16T00:18:44Z [CODE] Username references have been scrubbed from current docs and from reachable git history on `origin/main`.
 - 2026-02-16T00:35:55Z [CODE] Setup docs and agent policy now enforce repository-local instruction distribution and explicit PII hygiene.
+- 2026-02-17T11:44:23Z [CODE] Standalone service migration plan is now persisted in `docs/plans/standalone-systemd-indexing-service-plan.md` and ready for implementation work.
+- 2026-02-17T11:54:12Z [CODE] Plan now explicitly defines folder layout and component boundaries for OpenCode adapters, standalone daemon, and shared core modules.
+- 2026-02-17T12:04:36Z [CODE] Plan now enforces a two-product model with explicit scope boundaries and separate installation documentation paths.
+- 2026-02-17T12:17:13Z [CODE] Plan now reflects user-approved service identity (`semantic_search`) and document-first behavior for the systemd stack.
+- 2026-02-17T12:30:59Z [CODE] Plan now explicitly includes both event-driven and timer-driven index refresh mechanisms for service reliability.
+- 2026-02-17T12:40:31Z [CODE] Plan now locks semantic service configuration to dedicated `~/.config/semantic_search/` settings and env files.
+- 2026-02-17T12:47:02Z [CODE] Plan now defines installation-boundary guarantees and dedicated installer entrypoints for both products.
+- 2026-02-19T12:53:46Z [CODE] Symlink-following indexer work now has an executable markdown plan with isolated commit boundaries and per-phase validation gates.
+- 2026-02-19T13:02:15Z [CODE] Symlink feature Phase 1 is complete: config surface is in place with defaults/env/settings parsing, and focused tests remain green.
+- 2026-02-19T13:10:58Z [CODE] Symlink feature Phase 2 is complete: scanner traversal now supports symlink files/dirs, optional external targets, and cycle-safe walking with dedicated test coverage.
+- 2026-02-19T13:30:16Z [CODE] Symlink feature Phase 3 is complete: indexer now separates logical alias paths from resolved read paths while preserving logical cache/payload semantics.
+- 2026-02-19T13:41:06Z [CODE] Symlink feature Phase 4 is complete: regression matrix now includes `.ignore` handling on logical symlink aliases with all focused tests passing.
+- 2026-02-19T14:39:28Z [CODE] Symlink feature Phase 5 is complete: user-facing and implementation docs now describe symlink controls/behavior, and release gates pass.

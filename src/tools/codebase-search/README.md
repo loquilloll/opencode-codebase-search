@@ -62,6 +62,25 @@ The command runs with `/bin/sh` in the workspace root and must complete within 1
 - `CODEBASE_SEARCH_MODEL_DIMENSION` (recommended if using custom models)
 - `CODEBASE_SEARCH_QDRANT_URL` (default: `http://localhost:6333`)
 - `CODEBASE_SEARCH_QDRANT_API_KEY` (optional)
+- `CODEBASE_SEARCH_FOLLOW_SYMLINKS` (optional, default: `true`)
+- `CODEBASE_SEARCH_FOLLOW_EXTERNAL_SYMLINKS` (optional, default: `true`)
+
+## Symlink Traversal
+
+JSONC settings keys:
+
+- `followSymlinks` (default: `true`)
+- `followExternalSymlinks` (default: `true`)
+
+Behavior:
+
+- when `followSymlinks` is `false`, symbolic links are skipped
+- when `followSymlinks` is `true`, symlinked files and directories are traversed
+- when `followExternalSymlinks` is `false`, symlink targets resolving outside the worktree are skipped
+- when `followExternalSymlinks` is `true`, external symlink targets are included
+- cyclic directory links are prevented from recursing infinitely using resolved-realpath loop guards
+- broken or unreadable symlink targets are skipped without failing the full index pass
+- indexed file paths remain logical workspace paths (the symlink alias path), while file reads and parser extension detection use resolved target paths
 
 ## Provider Environment
 

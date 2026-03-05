@@ -51,7 +51,10 @@ opencode run -m openai/gpt-5.3-codex --format json --dir "$HOME" \
 
 1. Copy `codebase-search.settings.example.jsonc` to `codebase-search.settings.jsonc`.
 2. Set provider/model/Qdrant values.
-3. Optionally set `CODEBASE_SEARCH_SETTINGS_FILE`.
+3. Configure symlink traversal if needed:
+   - `followSymlinks` (default `true`)
+   - `followExternalSymlinks` (default `true`)
+4. Optionally set `CODEBASE_SEARCH_SETTINGS_FILE`.
 
 If Qdrant auth is disabled, set `qdrantApiKey` to `""` or omit it.
 
@@ -60,6 +63,11 @@ Settings resolution order:
 1. `CODEBASE_SEARCH_SETTINGS_FILE`
 2. `<worktree>/.opencode/codebase-search.settings.jsonc`
 3. `~/.config/opencode/codebase-search.settings.jsonc`
+
+Env overrides for symlink behavior:
+
+- `CODEBASE_SEARCH_FOLLOW_SYMLINKS`
+- `CODEBASE_SEARCH_FOLLOW_EXTERNAL_SYMLINKS`
 
 ## Qdrant with Docker Compose
 
