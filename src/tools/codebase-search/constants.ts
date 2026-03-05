@@ -15,6 +15,8 @@ export const BATCH_SEGMENT_THRESHOLD = 60
 
 export const DEFAULT_QDRANT_URL = "http://localhost:6333"
 export const DEFAULT_INDEX_MODE = "disabled"
+export const DEFAULT_FOLLOW_SYMLINKS = true
+export const DEFAULT_FOLLOW_EXTERNAL_SYMLINKS = true
 
 export const MAX_BATCH_RETRIES = 3
 export const INITIAL_RETRY_DELAY_MS = 500

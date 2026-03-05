@@ -5,6 +5,13 @@
 	// codebase_search index mode: "disabled" | "query" | "background"
 	"indexMode": "disabled",
 
+	// follow symlinked files/directories while scanning
+	"followSymlinks": true,
+
+	// allow following symlink targets that resolve outside the worktree
+	// only used when followSymlinks is true
+	"followExternalSymlinks": true,
+
 	// embedder provider
 	// openai | ollama | openai-compatible | gemini | mistral | vercel-ai-gateway | bedrock | openrouter
 	"provider": "openai",

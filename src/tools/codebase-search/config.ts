@@ -5,6 +5,8 @@ import { execSync } from "child_process"
 import { parse as parseJsonc } from "jsonc-parser"
 
 import {
+	DEFAULT_FOLLOW_EXTERNAL_SYMLINKS,
+	DEFAULT_FOLLOW_SYMLINKS,
 	DEFAULT_INDEX_MODE,
 	DEFAULT_MAX_SEARCH_RESULTS,
 	DEFAULT_QDRANT_URL,
@@ -30,6 +32,8 @@ type SettingsFile = Partial<
 	Pick<
 		IndexConfig,
 		| "indexMode"
+		| "followSymlinks"
+		| "followExternalSymlinks"
 		| "provider"
 		| "modelId"
 		| "modelDimension"
@@ -63,6 +67,35 @@ function parseNumber(value: string | undefined): number | undefined {
 	}
 
 	return parsed
+}
+
+function parseBoolean(value?: string): boolean | undefined {
+	if (!value) {
+		return undefined
+	}
+
+	const normalized = value.trim().toLowerCase()
+	if (["1", "true", "yes", "on"].includes(normalized)) {
+		return true
+	}
+
+	if (["0", "false", "no", "off"].includes(normalized)) {
+		return false
+	}
+
+	return undefined
+}
+
+function parseOptionalBoolean(value: unknown): boolean | undefined {
+	if (typeof value === "boolean") {
+		return value
+	}
+
+	if (typeof value === "string") {
+		return parseBoolean(value)
+	}
+
+	return undefined
 }
 
 function parseOptionalMode(value?: string): IndexMode | undefined {
@@ -194,6 +227,8 @@ function loadSettingsFromJsonc(worktree: string): SettingsFile {
 
 	return {
 		indexMode,
+		followSymlinks: parseOptionalBoolean(settings.followSymlinks),
+		followExternalSymlinks: parseOptionalBoolean(settings.followExternalSymlinks),
 		provider,
 		modelId: resolveOptionalString(settings.modelId, worktree, "modelId"),
 		modelDimension: typeof settings.modelDimension === "number" ? settings.modelDimension : undefined,
@@ -284,6 +319,14 @@ export function loadIndexConfig(worktree: string, modeOverride?: IndexMode): Ind
 		parseNumber(process.env.CODEBASE_SEARCH_SEARCH_MAX_RESULTS) ??
 		settings.searchMaxResults ??
 		DEFAULT_MAX_SEARCH_RESULTS
+	const followSymlinks =
+		parseBoolean(process.env.CODEBASE_SEARCH_FOLLOW_SYMLINKS) ??
+		settings.followSymlinks ??
+		DEFAULT_FOLLOW_SYMLINKS
+	const followExternalSymlinks =
+		parseBoolean(process.env.CODEBASE_SEARCH_FOLLOW_EXTERNAL_SYMLINKS) ??
+		settings.followExternalSymlinks ??
+		DEFAULT_FOLLOW_EXTERNAL_SYMLINKS
 
 	const cacheRoot = path.join(worktree, ".opencode", "codebase-search")
 	const cacheFilePath = path.join(cacheRoot, `${getCollectionName(worktree)}.cache.json`)
@@ -291,6 +334,8 @@ export function loadIndexConfig(worktree: string, modeOverride?: IndexMode): Ind
 	return {
 		worktree,
 		indexMode: resolveIndexMode(modeOverride, settings.indexMode),
+		followSymlinks,
+		followExternalSymlinks,
 		provider,
 		modelId,
 		modelDimension,

@@ -94,6 +94,8 @@ export interface ParsedBlock {
 export interface IndexConfig {
 	worktree: string
 	indexMode: IndexMode
+	followSymlinks: boolean
+	followExternalSymlinks: boolean
 	provider: EmbedderProvider
 	modelId: string
 	modelDimension?: number
