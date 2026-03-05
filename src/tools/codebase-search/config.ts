@@ -298,6 +298,16 @@ export function getCollectionName(worktree: string): string {
 	return collectionNameForWorktree(worktree)
 }
 
+export function getCacheFilePath(worktree: string): string {
+	const cacheRoot = path.join(os.homedir(), ".local", "share", "opencode-codebase-search")
+	return path.join(cacheRoot, `${getCollectionName(worktree)}.cache.json`)
+}
+
+export function getLegacyCacheFilePath(worktree: string): string {
+	const legacyCacheRoot = path.join(worktree, ".opencode", "codebase-search")
+	return path.join(legacyCacheRoot, `${getCollectionName(worktree)}.cache.json`)
+}
+
 export function getSettingsPath(worktree: string): string {
 	return settingsFilePath(worktree)
 }
@@ -328,8 +338,7 @@ export function loadIndexConfig(worktree: string, modeOverride?: IndexMode): Ind
 		settings.followExternalSymlinks ??
 		DEFAULT_FOLLOW_EXTERNAL_SYMLINKS
 
-	const cacheRoot = path.join(worktree, ".opencode", "codebase-search")
-	const cacheFilePath = path.join(cacheRoot, `${getCollectionName(worktree)}.cache.json`)
+	const cacheFilePath = getCacheFilePath(worktree)
 
 	return {
 		worktree,
