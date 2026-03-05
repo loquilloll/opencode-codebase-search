@@ -254,6 +254,7 @@
 - 2026-02-21T20:20:30Z [CODE] Added focused regression coverage at `src/tools/codebase-search/__tests__/config.test.ts` for `getSettingsPath()` precedence: env override > worktree `.opencode` > global `~/.config/opencode` when worktree file is absent.
 - 2026-02-21T20:31:42Z [CODE] Executed live testing methodology commands from `docs/plans/index-status-cli-plan.md` against `/home/<user>/Documents/pgit/mcp-obsidian` and captured results in `docs/plans/artifacts/test-evidence/index-status-live-mcp-obsidian.md`.
 - 2026-02-21T20:42:38Z [CODE] Ran a concurrent watch+query live pass on `/home/<user>/Documents/pgit/mcp-obsidian` (watch NDJSON while `codebase_search` ran in `query` mode) and appended non-zero delta evidence plus post-run caught-up snapshot to `docs/plans/artifacts/test-evidence/index-status-live-mcp-obsidian.md` and the plan file.
+- 2026-02-21T20:53:05Z [CODE] Added a concurrent background-mode live evidence pass (three `mode=background` runs while NDJSON watch was active), then appended observed transitions and post-run snapshot to `docs/plans/artifacts/test-evidence/index-status-live-mcp-obsidian.md` and `docs/plans/index-status-cli-plan.md`.
 
 [DISCOVERIES]
 
@@ -347,6 +348,8 @@
 - 2026-02-21T20:31:42Z [TOOL] Watch-mode verification passed in both outputs: NDJSON iterations included required `iteration` + `deltas` fields, `--no-skip-diff` produced non-null `status.diff`, and human watch exited on SIGINT with aggregate summary.
 - 2026-02-21T20:42:38Z [TOOL] Concurrent run evidence: `opencode run ... mode=query` reported `reason=incremental-index-applied` with `processedFiles=7` and `indexedBlocks=139`; overlapping watch NDJSON captured point/count transitions including `371 -> 312` (`indexingComplete true -> false`) and completion at `451` points (`indexingComplete false -> true`).
 - 2026-02-21T20:42:38Z [TOOL] Post-run one-shot status on `/home/<user>/Documents/pgit/mcp-obsidian` showed `diff.changed=0`, `estimatedBatches=0`, and all mode assessments `ok`.
+- 2026-02-21T20:53:05Z [TOOL] Concurrent background runs each returned `mode=background` with `triggered=true` and `reason=background-refresh-scheduled`; watch NDJSON captured async completion transition (`indexingComplete true -> false -> true`) and point growth (`487 -> 508`).
+- 2026-02-21T20:53:05Z [TOOL] Post-background one-shot status on `/home/<user>/Documents/pgit/mcp-obsidian` reported `diff.changed=0`, `estimatedBatches=0`, and `disabled/query/background` assessments all `ok`.
 
 [OUTCOMES]
 
@@ -417,3 +420,4 @@
 - 2026-02-21T20:20:30Z [CODE] Global-settings protection now has regression guards at both release-boundary and config-resolution layers, reducing risk of silent reintroduction of worktree runtime overrides.
 - 2026-02-21T20:31:42Z [CODE] Plan testing methodology now has concrete live-workspace evidence for one-shot and watch diagnostics, including diff-override and signal-stop behavior.
 - 2026-02-21T20:42:38Z [CODE] Testing methodology now also includes concurrent query+watch proof with non-zero live deltas and completion-state transitions, demonstrating watch usefulness during active indexing.
+- 2026-02-21T20:53:05Z [CODE] Testing methodology now includes matching concurrent background+watch evidence, validating asynchronous background scheduling visibility and caught-up confirmation after completion.

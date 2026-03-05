@@ -420,6 +420,7 @@ Run against the problematic workspace (for example `/home/<user>/Documents/pgit/
   - diff override behavior (`--watch --compact --no-skip-diff`)
   - clean SIGINT summary in human watch mode
 - Captured concurrent query-run evidence with non-zero watch deltas and indexing completion transitions (`true -> false -> true`) during live reconciliation.
+- Captured concurrent background-run evidence showing `background-refresh-scheduled` outputs and watch-observed completion transition with point growth (`487 -> 508`) in the same workspace.
 
 ## File Inventory
 

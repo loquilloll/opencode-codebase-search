@@ -110,3 +110,48 @@ These transitions confirm watch-mode visibility into in-flight reconciliation pr
   - `disabled`: `ok`
   - `query`: `ok` (`No pending reconciliation work; query mode should stay fast.`)
   - `background`: `ok` (`Background appears caught up`)
+
+## Concurrent background capture (scheduled refresh)
+
+Date: 2026-02-21
+
+### Commands
+
+```bash
+timeout -s INT 30 npx --yes tsx scripts/codebase-index-status.ts --worktree "/home/<user>/Documents/pgit/mcp-obsidian" --watch --interval-ms 1000 --compact > /tmp/index-status-watch-mcp-obsidian-background.ndjson &
+timeout 180 opencode run -m openai/gpt-5.3-codex --format json --dir "/home/<user>/Documents/pgit/mcp-obsidian" \
+  "Use ONLY the codebase_search tool. Call it with query 'background indexing health probe', mode 'background', and maxResults 5. Return exactly the JSON result." \
+  > /tmp/index-status-background-mcp-obsidian-1.json
+timeout 180 opencode run -m openai/gpt-5.3-codex --format json --dir "/home/<user>/Documents/pgit/mcp-obsidian" \
+  "Use ONLY the codebase_search tool. Call it with query 'background indexing health probe second pass', mode 'background', and maxResults 5. Return exactly the JSON result." \
+  > /tmp/index-status-background-mcp-obsidian-2.json
+timeout 180 opencode run -m openai/gpt-5.3-codex --format json --dir "/home/<user>/Documents/pgit/mcp-obsidian" \
+  "Use ONLY the codebase_search tool. Call it with query 'background indexing health probe final pass', mode 'background', and maxResults 5. Return exactly the JSON result." \
+  > /tmp/index-status-background-mcp-obsidian-3.json
+```
+
+### Background run results (tool output)
+
+- Each run reported:
+  - `mode=background`
+  - `indexing.performed=false`
+  - `indexing.triggered=true`
+  - `indexing.reason=background-refresh-scheduled`
+
+### Watch transitions observed
+
+- Baseline at iteration 1: `points=487`, `indexingComplete=true`
+- Iteration 15: `indexingCompleteChanged=true` (`true -> false`)
+- Iteration 16: `qdrantPoints=+21` (`487 -> 508`) and `indexingCompleteChanged=true` (`false -> true`)
+
+These transitions confirm background-mode scheduling produces asynchronous indexing work that watch mode can observe to completion.
+
+### Post-background one-shot snapshot
+
+- qdrant points: `508`
+- indexing complete: `true`
+- dry-run diff: `changed=0`, `new=0`, `deleted=0`, `estimatedBatches=0`
+- assessments:
+  - `disabled`: `ok`
+  - `query`: `ok`
+  - `background`: `ok`
