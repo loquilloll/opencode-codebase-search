@@ -37,8 +37,13 @@ class CodeParser {
 	private loadedParsers: LanguageParser = {}
 	private pendingLoads: Map<string, Promise<LanguageParser>> = new Map()
 
-	async parseTextIntoBlocks(filePath: string, content: string, fileHash: string): Promise<ParsedBlock[]> {
-		const extensionWithDot = path.extname(filePath).toLowerCase()
+	async parseTextIntoBlocks(
+		filePath: string,
+		content: string,
+		fileHash: string,
+		parsePath = filePath,
+	): Promise<ParsedBlock[]> {
+		const extensionWithDot = path.extname(parsePath).toLowerCase()
 		const extension = extensionWithDot.slice(1)
 		const seenSegmentHashes = new Set<string>()
 
@@ -60,7 +65,7 @@ class CodeParser {
 					return []
 				}
 			} else {
-				const loadPromise = loadRequiredLanguageParsers([filePath])
+				const loadPromise = loadRequiredLanguageParsers([parsePath])
 				this.pendingLoads.set(parserKey, loadPromise)
 				try {
 					const parsers = await loadPromise
@@ -103,7 +108,7 @@ class CodeParser {
 
 			if (currentNode.text.length > MAX_BLOCK_CHARS * MAX_CHARS_TOLERANCE_FACTOR) {
 				if (currentNode.children.length > 0) {
-					queue.push(...currentNode.children)
+					queue.push(...currentNode.children.filter((child): child is Node => child !== null))
 				} else {
 					const chunkedBlocks = this.chunkLeafNodeByLines(currentNode, filePath, fileHash, seenSegmentHashes)
 					results.push(...chunkedBlocks)
@@ -390,6 +395,11 @@ class CodeParser {
 
 const parser = new CodeParser()
 
-export async function parseTextIntoBlocks(filePath: string, content: string, fileHash: string): Promise<ParsedBlock[]> {
-	return parser.parseTextIntoBlocks(filePath, content, fileHash)
+export async function parseTextIntoBlocks(
+	filePath: string,
+	content: string,
+	fileHash: string,
+	options?: { parsePath?: string },
+): Promise<ParsedBlock[]> {
+	return parser.parseTextIntoBlocks(filePath, content, fileHash, options?.parsePath ?? filePath)
 }

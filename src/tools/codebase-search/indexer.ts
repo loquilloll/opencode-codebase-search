@@ -1,77 +1,47 @@
 import fs from "fs/promises"
-import path from "path"
 import { v5 as uuidv5 } from "uuid"
 
 import {
 	BATCH_SEGMENT_THRESHOLD,
-	DEFAULT_IGNORED_DIRS,
 	MAX_FILE_SIZE_BYTES,
 	QDRANT_CODE_BLOCK_NAMESPACE,
 } from "./constants"
-import { SUPPORTED_EXTENSIONS } from "./extensions"
-import { buildIgnoreMatcher, shouldIgnorePath } from "./ignore"
 import { IndexCache } from "./cache"
 import { createFileHash, parseTextIntoBlocks } from "./parser"
-import { toRelativeWorkspacePath, shouldIgnoreDirectoryName } from "./utils/paths"
+import { scanSupportedFiles } from "./scanner"
+import { toRelativeWorkspacePath } from "./utils/paths"
 import { QdrantIndexStore } from "./qdrant"
 import type { Embedder, IndexConfig, IndexingSummary, ParsedBlock } from "./types"
 
 type FileScanResult = {
 	relativePath: string
-	absolutePath: string
 	hash: string
 	blocks: ParsedBlock[]
 	isNew: boolean
 }
 
-async function collectSupportedFiles(worktree: string): Promise<string[]> {
-	const matcher = await buildIgnoreMatcher(worktree)
-	const files: string[] = []
+type FileCandidate = {
+	relativePath: string
+	logicalAbsolutePath: string
+	readAbsolutePath: string
+}
 
-	const walk = async (absoluteDir: string) => {
-		const entries = await fs.readdir(absoluteDir, { withFileTypes: true })
-		for (const entry of entries) {
-			const absolutePath = path.join(absoluteDir, entry.name)
-			const relativePath = toRelativeWorkspacePath(absolutePath, worktree)
+async function collectSupportedFiles(config: IndexConfig): Promise<FileCandidate[]> {
+	const scannedFiles = await scanSupportedFiles(config.worktree, {
+		followSymlinks: config.followSymlinks,
+		followExternalSymlinks: config.followExternalSymlinks,
+	})
 
-			if (entry.isDirectory()) {
-				if (shouldIgnoreDirectoryName(entry.name, DEFAULT_IGNORED_DIRS)) {
-					continue
-				}
-
-				if (shouldIgnorePath(relativePath, matcher)) {
-					continue
-				}
-
-				await walk(absolutePath)
-				continue
-			}
-
-			if (!entry.isFile()) {
-				continue
-			}
-
-			if (shouldIgnorePath(relativePath, matcher)) {
-				continue
-			}
-
-			const ext = path.extname(absolutePath).toLowerCase()
-			if (!SUPPORTED_EXTENSIONS.includes(ext)) {
-				continue
-			}
-
-			files.push(absolutePath)
-		}
-	}
-
-	await walk(worktree)
-	return files
+	return scannedFiles.map((file) => ({
+		relativePath: toRelativeWorkspacePath(file.logicalAbsolutePath, config.worktree),
+		logicalAbsolutePath: file.logicalAbsolutePath,
+		readAbsolutePath: file.resolvedAbsolutePath,
+	}))
 }
 
 async function collectChanges(
-	worktree: string,
 	cache: IndexCache,
-	absolutePaths: string[],
+	filesToScan: FileCandidate[],
 ): Promise<{
 	changedFiles: FileScanResult[]
 	deletedFiles: string[]
@@ -82,20 +52,19 @@ async function collectChanges(
 
 	const known = new Set<string>()
 
-	for (const absolutePath of absolutePaths) {
-		const relativePath = toRelativeWorkspacePath(absolutePath, worktree)
-		known.add(relativePath)
+	for (const fileCandidate of filesToScan) {
+		known.add(fileCandidate.relativePath)
 
 		try {
-			const stats = await fs.stat(absolutePath)
+			const stats = await fs.stat(fileCandidate.readAbsolutePath)
 			if (stats.size > MAX_FILE_SIZE_BYTES) {
 				skippedFiles++
 				continue
 			}
 
-			const content = await fs.readFile(absolutePath, "utf8")
+			const content = await fs.readFile(fileCandidate.readAbsolutePath, "utf8")
 			const hash = createFileHash(content)
-			const previousHash = cache.getHash(relativePath)
+			const previousHash = cache.getHash(fileCandidate.relativePath)
 
 			if (previousHash === hash) {
 				skippedFiles++
@@ -103,10 +72,11 @@ async function collectChanges(
 			}
 
 			changedFiles.push({
-				relativePath,
-				absolutePath,
+				relativePath: fileCandidate.relativePath,
 				hash,
-				blocks: await parseTextIntoBlocks(absolutePath, content, hash),
+				blocks: await parseTextIntoBlocks(fileCandidate.logicalAbsolutePath, content, hash, {
+					parsePath: fileCandidate.readAbsolutePath,
+				}),
 				isNew: !previousHash,
 			})
 		} catch {
@@ -124,8 +94,7 @@ async function collectChanges(
 }
 
 async function collectAllFilesForReindex(
-	worktree: string,
-	absolutePaths: string[],
+	filesToScan: FileCandidate[],
 ): Promise<{
 	changedFiles: FileScanResult[]
 	skippedFiles: number
@@ -133,24 +102,23 @@ async function collectAllFilesForReindex(
 	const changedFiles: FileScanResult[] = []
 	let skippedFiles = 0
 
-	for (const absolutePath of absolutePaths) {
-		const relativePath = toRelativeWorkspacePath(absolutePath, worktree)
-
+	for (const fileCandidate of filesToScan) {
 		try {
-			const stats = await fs.stat(absolutePath)
+			const stats = await fs.stat(fileCandidate.readAbsolutePath)
 			if (stats.size > MAX_FILE_SIZE_BYTES) {
 				skippedFiles++
 				continue
 			}
 
-			const content = await fs.readFile(absolutePath, "utf8")
+			const content = await fs.readFile(fileCandidate.readAbsolutePath, "utf8")
 			const hash = createFileHash(content)
 
 			changedFiles.push({
-				relativePath,
-				absolutePath,
+				relativePath: fileCandidate.relativePath,
 				hash,
-				blocks: await parseTextIntoBlocks(absolutePath, content, hash),
+				blocks: await parseTextIntoBlocks(fileCandidate.logicalAbsolutePath, content, hash, {
+					parsePath: fileCandidate.readAbsolutePath,
+				}),
 				isNew: true,
 			})
 		} catch {
@@ -178,15 +146,15 @@ export async function ensureIndexFresh(config: IndexConfig, embedder: Embedder):
 	const store = new QdrantIndexStore(config.worktree, config.qdrantUrl, vectorSize, config.qdrantApiKey)
 	const initializeResult = await store.initialize(true)
 
-	const absolutePaths = await collectSupportedFiles(config.worktree)
+	const filesToScan = await collectSupportedFiles(config)
 	const hasIndexedData = await store.hasIndexedData()
 	const adoptingExistingIndex = !cache.hasExistingFile && hasIndexedData && !initializeResult.created
 
-	let { changedFiles, deletedFiles, skippedFiles } = await collectChanges(config.worktree, cache, absolutePaths)
+	let { changedFiles, deletedFiles, skippedFiles } = await collectChanges(cache, filesToScan)
 
 	const collectionWasRecreated = initializeResult.created && cache.hasExistingFile
 	if (collectionWasRecreated) {
-		const fullReindex = await collectAllFilesForReindex(config.worktree, absolutePaths)
+		const fullReindex = await collectAllFilesForReindex(filesToScan)
 		changedFiles = fullReindex.changedFiles
 		skippedFiles = fullReindex.skippedFiles
 	}
