@@ -1,74 +1,38 @@
 # opencode-codebase-search
 
-Semantic `codebase_search` implementation for OpenCode with Roo behavior parity.
+Semantic `codebase_search` for OpenCode.
 
-## What this provides
+Adapted from Roo Code's `codebase_search` implementation and prompt contract.
 
-- A production `codebase_search` tool implementation under `src/tools/`.
-- A background indexing plugin under `src/plugins/`.
-- Generated runtime payload support via `npm run sync:opencode`.
-- Manual semantic-versioned release packaging for GitHub Releases.
+## What this repo provides
 
-## Install
+- Tool source: `src/tools/codebase_search.ts` and `src/tools/codebase-search/`
+- Background plugin: `src/plugins/codebase-index-worker.ts`
+- Generated runtime payload: `.opencode/` via `npm run sync:opencode`
+
+The tool works without Roo Code running.
+
+## Quick start
 
 ```bash
 npm install --no-audit --no-fund
-```
-
-## Generate runtime payload
-
-```bash
 npm run sync:opencode
 ```
 
-This generates `.opencode/` from `src/`.
-
-## Install globally for OpenCode config
-
-These are the exact steps used to install globally under `~/.config/opencode`.
-
-1. Generate runtime files from source:
+## Install globally for OpenCode
 
 ```bash
 npm run sync:opencode
-```
-
-2. Copy tool and plugin files into global OpenCode directories:
-
-```bash
 mkdir -p "$HOME/.config/opencode/tools" "$HOME/.config/opencode/plugins"
 rm -rf "$HOME/.config/opencode/tools/codebase-search"
 cp -f ".opencode/tools/codebase_search.ts" "$HOME/.config/opencode/tools/codebase_search.ts"
 cp -R ".opencode/tools/codebase-search" "$HOME/.config/opencode/tools/codebase-search"
 cp -f ".opencode/plugins/codebase-index-worker.ts" "$HOME/.config/opencode/plugins/codebase-index-worker.ts"
-```
-
-3. Install runtime dependencies into `~/.config/opencode`:
-
-```bash
-cd "$HOME/.config/opencode"
-npm install --no-audit --no-fund
-```
-
-If needed, ensure `~/.config/opencode/package.json` includes these dependencies:
-
-- `@aws-sdk/client-bedrock-runtime`
-- `@aws-sdk/credential-providers`
-- `@opencode-ai/plugin`
-- `@qdrant/js-client-rest`
-- `ignore`
-- `jsonc-parser`
-- `tree-sitter-wasms`
-- `uuid`
-- `web-tree-sitter`
-
-4. Install your personal settings globally:
-
-```bash
+cd "$HOME/.config/opencode" && npm install --no-audit --no-fund
 cp -f "codebase-search.settings.jsonc" "$HOME/.config/opencode/codebase-search.settings.jsonc"
 ```
 
-5. Verify global availability outside this repository:
+Verify from outside this repo:
 
 ```bash
 opencode run -m openai/gpt-5.3-codex --format json --dir "$HOME" \
@@ -78,32 +42,56 @@ opencode run -m openai/gpt-5.3-codex --format json --dir "$HOME" \
 ## Configure settings
 
 1. Copy `codebase-search.settings.example.jsonc` to `codebase-search.settings.jsonc`.
-2. Fill provider/model/Qdrant values.
-3. Optionally point to a custom settings path with `CODEBASE_SEARCH_SETTINGS_FILE`.
+2. Set provider/model/Qdrant values.
+3. Optionally set `CODEBASE_SEARCH_SETTINGS_FILE`.
 
-`codebase-search.settings.jsonc` is local and gitignored.
+If Qdrant auth is disabled, set `qdrantApiKey` to `""` or omit it.
 
 Settings resolution order:
 
-1. `CODEBASE_SEARCH_SETTINGS_FILE` (if set)
+1. `CODEBASE_SEARCH_SETTINGS_FILE`
 2. `<worktree>/.opencode/codebase-search.settings.jsonc`
 3. `~/.config/opencode/codebase-search.settings.jsonc`
 
-## Mode behavior
+## Qdrant with Docker Compose
 
-- `disabled`: search existing index only.
-- `query`: refresh index before search.
-- `background`: return immediately and schedule refresh.
+`docker-compose.yml`:
 
-## OpenCode config prompt guidance
+```yaml
+services:
+  qdrant:
+    image: qdrant/qdrant:latest
+    restart: unless-stopped
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - ./qdrant-storage:/qdrant/storage
+```
 
-If you set tool behavior via OpenCode config/system prompt, use this minimal policy:
+Start and verify:
 
-- call `codebase_search` first for questions about where/how code is implemented
-- use `query` when freshness matters, otherwise `disabled`
-- ground final answers in tool results and include file paths/snippets
+```bash
+docker compose up -d
+curl -fsS http://127.0.0.1:6333/collections
+```
 
-## Release docs
+Use:
+
+- `qdrantUrl`: `http://127.0.0.1:6333`
+- `qdrantApiKey`: `""` (or omit) when auth is disabled
+
+## Index behavior and Roo coexistence
+
+If Roo Code and OpenCode share the same worktree and Qdrant, both can update the same collection.
+
+- `disabled`: no index update; search current index state
+- `query`: refresh/reconcile index before search
+- `background`: return immediately and schedule refresh (plugin events can also schedule refresh)
+
+Concurrent indexing can increase write load, but updates are idempotent by segment hash.
+
+## Docs
 
 - `docs/ARCHITECTURE.md`
 - `docs/RELEASING.md`

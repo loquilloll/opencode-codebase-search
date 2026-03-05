@@ -17,6 +17,7 @@
 
 	// qdrant
 	"qdrantUrl": "http://localhost:6333",
+	// Leave empty (or omit) when Qdrant auth is disabled.
 	"qdrantApiKey": "",
 
 	// search tuning

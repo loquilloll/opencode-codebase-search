@@ -36,6 +36,10 @@
 - 2026-02-15T20:33:18Z [USER] Requested README updates to explicitly document the exact global install steps that were just executed.
 - 2026-02-15T20:36:34Z [USER] Requested updating OpenCode `instructions` configuration to enable recommended `codebase_search` usage guidance.
 - 2026-02-15T20:45:17Z [USER] Clarified that the tool description should align with Roo prompt source at `/home/<user>/Documents/pgit/Roo-Code/src/core/prompts/tools/native-tools/codebase_search.ts`.
+- 2026-02-15T21:28:20Z [USER] Reported warning `Api key is used with unsecure connection` when using self-hosted HTTP Qdrant with empty `qdrantApiKey` and requested resolution.
+- 2026-02-15T21:31:50Z [USER] Requested explicit Roo Code attribution in `README.md` for this tool.
+- 2026-02-15T21:36:05Z [USER] Requested instructions to clarify tool can run without Roo Code, explain Roo/OpenCode concurrent indexing implications, and add Docker Compose Qdrant setup instructions.
+- 2026-02-15T21:39:59Z [USER] Requested condensing README wording and removing repetitive phrasing.
 - 2026-02-15T18:55:01Z [USER] Requested writing the reorganization + OpenCode config prompting plan into a repository file.
 - 2026-02-15T18:55:01Z [CODE] Prepared and saved a concrete phased plan at `docs/plans/repo-reorg-and-opencode-config-plan.md`.
 
@@ -64,6 +68,8 @@
 - 2026-02-15T17:29:32Z [USER] `AGENTS.md` should serve as the agent-facing operating guide for this repository.
 - 2026-02-15T19:05:57Z [USER] Prompting contract should be concise and config-driven rather than embedded in extensive repository docs.
 - 2026-02-15T20:31:17Z [USER] Global tool availability should work from outside repository roots.
+- 2026-02-15T21:28:20Z [USER] Empty-string Qdrant API key should be treated as unset to avoid false insecure-key warnings.
+- 2026-02-15T21:36:05Z [USER] Roo and OpenCode are often used concurrently; docs/instructions should explicitly describe index trigger behavior in that workflow.
 
 [PROGRESS]
 
@@ -145,6 +151,14 @@
 - 2026-02-15T20:36:34Z [CODE] Updated `~/.config/opencode/opencode.jsonc` `instructions` array to include `~/.config/opencode/instructions/codebase-search.md` alongside shell strategy guidance.
 - 2026-02-15T20:45:17Z [CODE] Updated `src/tools/codebase_search.ts` description and core argument descriptions to match Roo's native `codebase_search` prompt contract (including the critical "use first" guidance), while retaining local `mode` and `maxResults` parameters.
 - 2026-02-15T20:45:17Z [CODE] Updated global instruction file `~/.config/opencode/instructions/codebase-search.md` to align wording with Roo description and resynced global tool/plugin files from generated `.opencode` output.
+- 2026-02-15T21:28:20Z [CODE] Normalized Qdrant API key handling in `src/tools/codebase-search/qdrant.ts` so empty/whitespace API keys are converted to `undefined` before constructing `QdrantClient`.
+- 2026-02-15T21:28:20Z [CODE] Updated `codebase-search.settings.example.jsonc` and `README.md` to clarify that `qdrantApiKey` can be empty/omitted when auth is disabled.
+- 2026-02-15T21:28:20Z [CODE] Regenerated `.opencode/` and resynced global install in `~/.config/opencode/tools/` and `~/.config/opencode/plugins/` so local runtime picks up the warning fix.
+- 2026-02-15T21:31:50Z [CODE] Added `README.md` attribution section explicitly crediting Roo Code as the upstream semantic `codebase_search` source/inspiration.
+- 2026-02-15T21:36:05Z [CODE] Updated `README.md` with `Standalone and Roo coexistence` guidance, including per-mode index trigger implications (`disabled`, `query`, `background`) when Roo and OpenCode share the same Qdrant/worktree.
+- 2026-02-15T21:36:05Z [CODE] Added `README.md` section `Qdrant with Docker Compose` with compose file, startup command, health check, and matching settings values.
+- 2026-02-15T21:36:05Z [CODE] Updated active global instruction file `~/.config/opencode/instructions/codebase-search.md` to state standalone usage, Roo/OpenCode coexistence behavior, and mode-trigger implications.
+- 2026-02-15T21:39:59Z [CODE] Rewrote `README.md` into a shorter structure while retaining required content: Roo attribution, global install steps, settings resolution, Docker Compose Qdrant setup, and Roo/OpenCode coexistence implications.
 
 [DISCOVERIES]
 
@@ -207,6 +221,8 @@
 - 2026-02-15T20:36:34Z [TOOL] `opencode debug config` confirms active instructions now include both `~/.config/opencode/plugin/shell-strategy/shell_strategy.md` and `~/.config/opencode/instructions/codebase-search.md`.
 - 2026-02-15T20:45:17Z [TOOL] Verified Roo source description content from `/home/<user>/Documents/pgit/Roo-Code/src/core/prompts/tools/native-tools/codebase_search.ts` and mirrored it in project/global tool-facing guidance.
 - 2026-02-15T20:45:17Z [TOOL] Post-sync smoke run from `/home/<user>` still executes `codebase_search` successfully with global install.
+- 2026-02-15T21:28:20Z [TOOL] Before fix, `opencode run ... codebase_search` emitted `Api key is used with unsecure connection.` twice when `qdrantApiKey` was `""` and URL used `http://`.
+- 2026-02-15T21:28:20Z [TOOL] After key normalization + global sync, repeated `opencode run` smoke test from `/home/<user>` completed with no insecure-key warning output.
 
 [OUTCOMES]
 
@@ -241,3 +257,7 @@
 - 2026-02-15T20:33:18Z [CODE] Repository docs now include reproducible, copy-paste global install instructions aligned with the performed installation flow.
 - 2026-02-15T20:36:34Z [CODE] Recommended `codebase_search` instruction policy is now enabled in global OpenCode settings.
 - 2026-02-15T20:45:17Z [CODE] Tool description/prompting is now aligned with Roo's canonical `codebase_search` description in both source and active global OpenCode setup.
+- 2026-02-15T21:28:20Z [CODE] Self-hosted HTTP Qdrant with empty API key now runs cleanly without false insecure-key warnings.
+- 2026-02-15T21:31:50Z [CODE] README now includes explicit Roo Code attribution for provenance and credit.
+- 2026-02-15T21:36:05Z [CODE] User-facing and instruction-layer docs now explicitly cover standalone use, concurrent Roo/OpenCode indexing implications, and local Docker Compose Qdrant setup.
+- 2026-02-15T21:39:59Z [CODE] README is now concise and task-focused without removing operational setup details.

@@ -24,6 +24,7 @@ export class QdrantIndexStore {
 		private readonly apiKey?: string,
 	) {
 		const normalizedUrl = this.parseQdrantUrl(qdrantUrl)
+		const normalizedApiKey = typeof apiKey === "string" && apiKey.trim() !== "" ? apiKey.trim() : undefined
 		this.collectionName = collectionNameForWorktree(worktree)
 
 		try {
@@ -37,7 +38,7 @@ export class QdrantIndexStore {
 				https: useHttps,
 				port,
 				prefix: urlObj.pathname === "/" ? undefined : urlObj.pathname.replace(/\/+$/, ""),
-				apiKey,
+				apiKey: normalizedApiKey,
 				headers: {
 					"User-Agent": "Roo-Codebase-Search-Tool",
 				},
@@ -45,7 +46,7 @@ export class QdrantIndexStore {
 		} catch {
 			this.client = new QdrantClient({
 				url: normalizedUrl,
-				apiKey,
+				apiKey: normalizedApiKey,
 				headers: {
 					"User-Agent": "Roo-Codebase-Search-Tool",
 				},
